@@ -75,3 +75,5 @@ config.env
 
 # FuseBox cache
 .fusebox/
+
+public/img/
