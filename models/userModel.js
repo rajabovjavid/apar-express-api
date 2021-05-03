@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, "Please provide a valid email"],
   },
+  phone_number: {
+    type: String,
+    unique: true,
+  },
   name_surname: {
     type: String,
     required: [true, "Please tell us your name and surname!"],
@@ -30,31 +34,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "default.jpg",
   },
-  phone_number: {
-    type: String,
-    unique: true,
-  },
   id_card: {
     type: String,
   },
   verification: {
-    phone_number: {
-      type: Boolean,
-      default: false,
-    },
-    id_card: {
-      type: Boolean,
-      default: false,
-    },
-    image: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  is_verified: {
-    type: Boolean,
+    type: String,
     required: true,
-    default: false,
+    default: "Not Uploaded",
+    enum: ["Not Uploaded", "Uploaded", "Verified"],
   },
   social_accounts: {
     facebook: {
