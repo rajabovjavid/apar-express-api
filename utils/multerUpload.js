@@ -3,12 +3,13 @@ const AppError = require("./appError");
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (file.fieldname === "image") cb(null, "public/img/users/images");
-    else if (file.fieldname === "id_card") cb(null, "public/img/users/ids");
+    cb(null, "public/uploads");
   },
   filename: (req, file, cb) => {
     const ext = file.mimetype.split("/")[1];
-    cb(null, `${req.user.id}.${ext}`); // -${Date.now()}
+    if (file.fieldname === "image") cb(null, `user-img-${req.user.id}.${ext}`);
+    else if (file.fieldname === "id_card")
+      cb(null, `user-id-${req.user.id}.${ext}`);
   },
 });
 
