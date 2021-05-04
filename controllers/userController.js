@@ -1,17 +1,29 @@
+const fs = require("fs");
+const util = require("util");
+
+const unlinkFile = util.promisify(fs.unlink);
+
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
-const upload = require("../utils/imageUpload");
+const multerUpload = require("../utils/multerUpload");
+const storeImage = require("../utils/s3");
 
 exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
 };
 
-exports.uploadImage = upload.single("image");
+exports.uploadImage = multerUpload.single("image");
 
-exports.uploadIdCard = upload.single("id_card");
+exports.uploadIdCard = multerUpload.single("id_card");
+
+exports.storeImage = async (req, res, next) => {
+  await storeImage(req.file);
+  await unlinkFile(req.file.path);
+  next();
+};
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -52,11 +64,18 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not defined! Please use /signup instead",
-  });
+exports.isVerified = (req, res, next) => {
+  if (req.user.verification === "Not Uploaded") {
+    return next(new AppError("You have to upload your image and id card", 403));
+  }
+
+  if (req.user.verification === "Uploaded") {
+    return next(
+      new AppError("Wait until admin verifies your image and id card", 403)
+    );
+  }
+
+  next();
 };
 
 exports.getUser = factory.getOne(User);
