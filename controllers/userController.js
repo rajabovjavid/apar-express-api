@@ -8,7 +8,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
 const multerUpload = require("../utils/multerUpload");
-const storeImage = require("../utils/s3");
+const storeFile = require("../utils/s3");
 
 exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
@@ -19,11 +19,11 @@ exports.uploadImage = multerUpload.single("image");
 
 exports.uploadIdCard = multerUpload.single("id_card");
 
-exports.storeImage = async (req, res, next) => {
-  await storeImage(req.file);
+exports.storeImage = catchAsync(async (req, res, next) => {
+  await storeFile(req.file);
   await unlinkFile(req.file.path);
   next();
-};
+});
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -46,9 +46,13 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated
   const filteredBody = filterObj(req.body, "email", "name_surname");
-  if (req.file.fieldname === "image") filteredBody.image = req.file.filename;
-  else if (req.file.fieldname === "id_card")
+  if (req.file.fieldname === "image") {
+    filteredBody.image = req.file.filename;
+    if (req.user.id_card) filteredBody.verification = "Uploaded";
+  } else if (req.file.fieldname === "id_card") {
     filteredBody.id_card = req.file.filename;
+    if (req.user.image) filteredBody.verification = "Uploaded";
+  }
 
   // 3) Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
