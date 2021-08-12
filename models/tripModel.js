@@ -9,25 +9,19 @@ const tripSchema = new mongoose.Schema({
   origin: {
     type: String,
     required: true,
+    // enum: ["Gəncə", "Bakı"],
   },
   destination: {
     type: String,
     required: true,
+    // enum: ["Gəncə", "Bakı"],
   },
-  departure_date: {
+  pickup_deadline: {
     type: Date,
     required: true,
   },
-  arrival_date: {
+  delivery_deadline: {
     type: Date,
-    required: true,
-  },
-  deadline_date: {
-    type: Date,
-    required: true,
-  },
-  transport_type: {
-    type: String,
     required: true,
   },
   max_weight: {
@@ -37,6 +31,10 @@ const tripSchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  calculated_price_per_kg: {
+    type: Number,
+    required: true,
+  },
   price_per_kg: {
     type: Number,
     required: true,
@@ -44,10 +42,12 @@ const tripSchema = new mongoose.Schema({
   is_active: {
     type: Boolean,
     required: true,
+    default: true,
   },
   earning: {
     type: Number,
     required: true,
+    default: 0,
   },
 });
 
