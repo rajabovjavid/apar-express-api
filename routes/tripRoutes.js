@@ -5,12 +5,11 @@ const authController = require("../controllers/authController");
 
 const router = express.Router();
 
-// only signedIn users
-router.use(authController.protect);
-
 router.route("/").get(tripController.getAllTrips);
 router.route("/:id").get(tripController.getTrip);
 
+// only signedIn users
+router.use(authController.protect);
 // only verified users
 router.use(userController.isVerified);
 
