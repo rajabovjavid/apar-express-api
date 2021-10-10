@@ -1,6 +1,7 @@
 const express = require("express");
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
+const uploadController = require("../controllers/uploadController");
 
 const router = express.Router();
 
@@ -15,18 +16,10 @@ router.patch("/resetPassword/:token", authController.resetPassword);
 router.use(authController.protect);
 router.patch("/updateMyPassword", authController.updatePassword);
 router.get("/me", userController.getMe, userController.getUser);
-router.patch(
-  "/updateMe",
-  userController.uploadImage,
-  userController.storeImage,
-  userController.updateMe
-);
-router.patch(
-  "/uploadIdCard",
-  userController.uploadIdCard,
-  userController.storeImage,
-  userController.updateMe
-);
+router.patch("/updateMe", userController.updateMe);
+
+router.get("/uploadImage", uploadController.uploadUserImage);
+router.get("/uploadIdImage", uploadController.uploadUserIdImage);
 
 router.use(authController.restrictTo("admin"));
 
