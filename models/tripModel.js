@@ -51,6 +51,15 @@ const tripSchema = new mongoose.Schema({
   },
 });
 
+tripSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "traveler",
+    select:
+      "traveler.total_rating traveler.number_of_completed_trips traveler.number_of_trips",
+  });
+  next();
+});
+
 const Trip = mongoose.model("Trip", tripSchema);
 
 module.exports = Trip;
