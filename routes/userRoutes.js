@@ -1,7 +1,8 @@
 const express = require("express");
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
-const uploadController = require("../controllers/uploadController");
+// const uploadController = require("../controllers/uploadController");
+const s3Controller = require("../controllers/s3Controller");
 
 const router = express.Router();
 
@@ -18,8 +19,9 @@ router.patch("/updateMyPassword", authController.updatePassword);
 router.get("/me", userController.getMe, userController.getUser);
 router.patch("/updateMe", userController.updateMe);
 
-router.get("/uploadImage", uploadController.uploadUserImage);
-router.get("/uploadIdImage", uploadController.uploadUserIdImage);
+// router.get("/uploadImage", uploadController.uploadUserImage);
+// router.get("/uploadIdImage", uploadController.uploadUserIdImage);
+router.get("/signedUrl", s3Controller.getSignedUrl);
 
 router.use(authController.restrictTo("admin"));
 
