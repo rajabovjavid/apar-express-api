@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema({
-  traveler: {
-    type: mongoose.Schema.ObjectId,
-    required: true,
-    ref: "User",
-  },
   shipment: {
     type: mongoose.Schema.ObjectId,
     required: true,
