@@ -3,107 +3,110 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: [true, "Please provide your email"],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, "Please provide a valid email"],
-  },
-  phone_number: {
-    type: String,
-    unique: true,
-  },
-  name_surname: {
-    type: String,
-    required: [true, "Please tell us your name and surname!"],
-  },
-  role: {
-    type: String,
-    enum: ["user", "admin"],
-    default: "user",
-    immutable: (doc) => doc.role !== "ADMIN",
-  },
-  password: {
-    type: String,
-    required: [true, "Please provide a password"],
-    minlength: 8,
-    select: false,
-  },
-  image: {
-    type: String,
-    default: "default.jpg",
-  },
-  id_card: {
-    type: String,
-  },
-  verification: {
-    type: String,
-    required: true,
-    default: "Not Uploaded",
-    enum: ["Not Uploaded", "Uploaded", "Verified"],
-  },
-  social_accounts: {
-    facebook: {
+const userSchema = new mongoose.Schema(
+  {
+    email: {
       type: String,
-      default: "",
+      required: [true, "Please provide your email"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "Please provide a valid email"],
     },
-    instagram: {
+    phone_number: {
       type: String,
-      default: "",
+      unique: true,
     },
-  },
-  promo: {
-    code: {
+    name_surname: {
       type: String,
-      default: "",
+      required: [true, "Please tell us your name and surname!"],
     },
-    link: {
+    role: {
       type: String,
-      default: "",
+      enum: ["user", "admin"],
+      default: "user",
+      immutable: (doc) => doc.role !== "ADMIN",
     },
-  },
-  traveler: {
-    number_of_trips: {
-      type: Number,
+    password: {
+      type: String,
+      required: [true, "Please provide a password"],
+      minlength: 8,
+      select: false,
+    },
+    image: {
+      type: String,
+      default: "default.jpg",
+    },
+    id_card: {
+      type: String,
+    },
+    verification: {
+      type: String,
       required: true,
-      default: 0,
+      default: "Not Uploaded",
+      enum: ["Not Uploaded", "Uploaded", "Verified"],
     },
-    number_of_completed_trips: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    total_rating: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    is_partner: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    bank_account: {
-      bank_name: {
+    social_accounts: {
+      facebook: {
         type: String,
         default: "",
       },
-      iban: {
-        type: String,
-        default: "",
-      },
-      swift: {
+      instagram: {
         type: String,
         default: "",
       },
     },
+    promo: {
+      code: {
+        type: String,
+        default: "",
+      },
+      link: {
+        type: String,
+        default: "",
+      },
+    },
+    traveler: {
+      number_of_trips: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      number_of_completed_trips: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      total_rating: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      is_partner: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      bank_account: {
+        bank_name: {
+          type: String,
+          default: "",
+        },
+        iban: {
+          type: String,
+          default: "",
+        },
+        swift: {
+          type: String,
+          default: "",
+        },
+      },
+    },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   },
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-});
+  { timestamps: true }
+);
 
 // hashing password before saving user
 userSchema.pre("save", async function (next) {
