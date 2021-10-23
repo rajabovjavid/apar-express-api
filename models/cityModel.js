@@ -11,7 +11,7 @@ const DistanceToSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { _id: false }
+  { _id: false, timestamps: true }
 );
 
 const citySchema = new mongoose.Schema({
