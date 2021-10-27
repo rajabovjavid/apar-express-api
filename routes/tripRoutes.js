@@ -15,7 +15,11 @@ router.use(userController.isVerified);
 
 router
   .route("/")
-  .post(tripController.calculatePricePerKg, tripController.createTrip);
+  .post(
+    tripController.calculatePricePerKg,
+    tripController.beforeCreateTrip,
+    tripController.createTrip
+  );
 router
   .route("/:id")
   .patch(tripController.updateTrip)
