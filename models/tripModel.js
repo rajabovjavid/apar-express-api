@@ -7,6 +7,13 @@ const tripSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
+    traveler_ratings_average: {
+      // TODO - need to update very
+      type: Number,
+      required: true,
+      default: 0,
+      select: false,
+    },
     origin: {
       type: String,
       required: true,
@@ -16,6 +23,12 @@ const tripSchema = new mongoose.Schema(
       type: String,
       required: true,
       // enum: ["Gəncə", "Bakı"],
+    },
+    region: {
+      type: String,
+      required: true,
+      enum: ["local", "global"],
+      default: "local",
     },
     pickup_deadline: {
       type: Date,
@@ -58,8 +71,13 @@ tripSchema.pre(/^find/, function (next) {
   this.populate({
     path: "traveler",
     select:
-      "traveler.total_rating traveler.number_of_completed_trips traveler.number_of_trips",
+      "traveler.ratings_average traveler.ratings_quantity traveler.number_of_completed_trips traveler.number_of_trips",
   });
+  next();
+});
+
+tripSchema.pre("find", function (next) {
+  this.sort("-traveler_ratings_average");
   next();
 });
 
