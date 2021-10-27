@@ -11,17 +11,20 @@ const DistanceToSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { _id: false, timestamps: true }
+  { _id: false }
 );
 
-const citySchema = new mongoose.Schema({
-  city_name: {
-    type: String,
-    required: true,
-    unique: true,
+const citySchema = new mongoose.Schema(
+  {
+    city_name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    distances_to: [DistanceToSchema],
   },
-  distances_to: [DistanceToSchema],
-});
+  { timestamps: true }
+);
 
 const City = mongoose.model("City", citySchema);
 
