@@ -12,4 +12,10 @@ router.route("/").post(shipmentController.createShipment);
 
 router.route("/signedUrl").get(s3Controller.getSignedUrl);
 
+router
+  .route("/my-shipments")
+  .get(shipmentController.getMyShipments, shipmentController.getAllShipments);
+
+router.route("/").get(shipmentController.getAllShipments);
+
 module.exports = router;
