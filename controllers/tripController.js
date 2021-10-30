@@ -55,6 +55,14 @@ exports.calculatePricePerKg = catchAsync(async (req, res, next) => {
   next();
 });
 
+exports.beforeGetAllTrips = (req, res, next) => {
+  req.query.is_active = "true";
+  req.query.pickup_deadline = { gte: new Date() };
+  req.query.fields = "-description,-is_active,-earning,-createdAt,-updatedAt";
+  req.query.sort = "pickup_deadline,-traveler_ratings_average";
+  next();
+};
+
 exports.getTrip = factory.getOne(Trip);
 
 exports.getAllTrips = factory.getAll(Trip);
