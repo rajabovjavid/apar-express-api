@@ -12,7 +12,6 @@ const tripSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
-      select: false,
     },
     origin: {
       type: String,
@@ -64,20 +63,25 @@ const tripSchema = new mongoose.Schema(
       default: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-tripSchema.pre(/^find/, function (next) {
+// Virtual populate
+tripSchema.virtual("shipments", {
+  ref: "Shipment",
+  foreignField: "trip",
+  localField: "_id",
+});
+
+tripSchema.pre(/^findOne/, function (next) {
   this.populate({
     path: "traveler",
     select:
       "traveler.ratings_average traveler.ratings_quantity traveler.number_of_completed_trips traveler.number_of_trips",
+  }).populate({
+    path: "shipments",
+    select: "-createdAt -updatedAt",
   });
-  next();
-});
-
-tripSchema.pre("find", function (next) {
-  this.sort("-traveler_ratings_average");
   next();
 });
 
