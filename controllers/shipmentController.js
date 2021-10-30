@@ -30,16 +30,5 @@ exports.createShipment = catchAsync(async (req, res) => {
   });
 });
 
-// exports.getShipmentsByUserId = (req, res, next) => {
-//   req.query.sender = req.user.id;
-//   next();
-// };
-
-exports.getMyShipments = (req, res, next) => {
-  req.query.sender = req.user.id;
-  next();
-};
-
 exports.getShipment = factory.getOne(Shipment);
-
 exports.getAllShipments = factory.getAll(Shipment);

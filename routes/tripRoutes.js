@@ -5,7 +5,9 @@ const authController = require("../controllers/authController");
 
 const router = express.Router();
 
-router.route("/").get(tripController.getAllTrips);
+router
+  .route("/")
+  .get(tripController.beforeGetAllTrips, tripController.getAllTrips); // for TripListScreen
 router.route("/:id").get(tripController.getTrip);
 
 // only signedIn users
