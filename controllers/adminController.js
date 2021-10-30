@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const City = require("../models/cityModel");
 const Shipment = require("../models/shipmentModel");
+const Trip = require("../models/tripModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
@@ -62,3 +63,6 @@ exports.addDistance = catchAsync(async (req, res, next) => {
 
 // shipment related operations
 exports.getAllShipments = factory.getAll(Shipment);
+
+// trip related operations
+exports.getAllTrips = factory.getAll(Trip);
