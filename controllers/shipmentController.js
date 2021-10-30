@@ -14,7 +14,7 @@ exports.createShipment = catchAsync(async (req, res) => {
       weight: req.body.package_weight,
     },
     receiver_number: req.body.receiver_number,
-    totalPrice: req.body.price_per_kg * req.body.package_weight,
+    total_price: req.body.price_per_kg * req.body.package_weight,
     status: {
       status: "sender_requested",
       details:
@@ -29,6 +29,16 @@ exports.createShipment = catchAsync(async (req, res) => {
     },
   });
 });
+
+// exports.getShipmentsByUserId = (req, res, next) => {
+//   req.query.sender = req.user.id;
+//   next();
+// };
+
+exports.getMyShipments = (req, res, next) => {
+  req.query.sender = req.user.id;
+  next();
+};
 
 exports.getShipment = factory.getOne(Shipment);
 

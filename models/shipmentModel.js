@@ -16,7 +16,7 @@ const shipmentSchema = new mongoose.Schema(
       category: {
         type: String,
         required: true,
-        enum: ["kitab", "sened", "yemek", "başqa"],
+        // enum: ["kitab", "sened", "yemek", "başqa"],
       },
       details: {
         type: String,
@@ -43,7 +43,7 @@ const shipmentSchema = new mongoose.Schema(
         type: String,
       },
     },
-    totalPrice: {
+    total_price: {
       type: Number,
       required: true,
     },
