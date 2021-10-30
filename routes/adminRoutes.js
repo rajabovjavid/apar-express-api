@@ -30,4 +30,7 @@ router.route("/cities/:id/addDistance").patch(adminController.addDistance);
 // shipment related routes
 router.route("/shipments").get(adminController.getAllShipments);
 
+// user related routes
+router.route("/trips").get(adminController.getAllTrips);
+
 module.exports = router;

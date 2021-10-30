@@ -56,10 +56,20 @@ exports.calculatePricePerKg = catchAsync(async (req, res, next) => {
 });
 
 exports.beforeGetAllTrips = (req, res, next) => {
-  req.query.is_active = "true";
-  req.query.pickup_deadline = { gte: new Date() };
-  req.query.fields = "-description,-is_active,-earning,-createdAt,-updatedAt";
-  req.query.sort = "pickup_deadline,-traveler_ratings_average";
+  const pickup_deadline = {};
+  pickup_deadline.gte = req.query.pickup_deadline || new Date();
+  if (req.query.pickup_deadline) {
+    const date = new Date(req.query.pickup_deadline);
+    pickup_deadline.lte = date.setUTCHours(23, 59, 59, 999); // end of the date
+  }
+
+  req.query = {
+    ...req.query,
+    is_active: "true",
+    pickup_deadline,
+    fields: "-description,-is_active,-earning,-createdAt,-updatedAt",
+    sort: "pickup_deadline,-traveler_ratings_average",
+  };
   next();
 };
 
