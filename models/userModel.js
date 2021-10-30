@@ -113,8 +113,31 @@ const userSchema = new mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+// Virtual populate
+userSchema.virtual("shipments", {
+  ref: "Shipment",
+  foreignField: "sender",
+  localField: "_id",
+});
+userSchema.virtual("trips", {
+  ref: "Trip",
+  foreignField: "traveler",
+  localField: "_id",
+});
+
+userSchema.pre(/^findOne/, function (next) {
+  this.populate({
+    path: "shipments",
+    select: "-createdAt -updatedAt",
+  }).populate({
+    path: "trips",
+    select: "-createdAt -updatedAt",
+  });
+  next();
+});
 
 // hashing password before saving user
 userSchema.pre("save", async function (next) {
