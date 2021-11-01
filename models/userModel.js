@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
+      select: false,
       enum: ["user", "admin"],
       default: "user",
       immutable: (doc) => doc.role !== "ADMIN",
@@ -126,17 +127,6 @@ userSchema.virtual("trips", {
   ref: "Trip",
   foreignField: "traveler",
   localField: "_id",
-});
-
-userSchema.pre(/^findOne/, function (next) {
-  this.populate({
-    path: "shipments",
-    select: "-createdAt -updatedAt",
-  }).populate({
-    path: "trips",
-    select: "-createdAt -updatedAt",
-  });
-  next();
 });
 
 // hashing password before saving user

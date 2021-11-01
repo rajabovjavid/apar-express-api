@@ -73,18 +73,6 @@ tripSchema.virtual("shipments", {
   localField: "_id",
 });
 
-tripSchema.pre(/^findOne/, function (next) {
-  this.populate({
-    path: "traveler",
-    select:
-      "traveler.ratings_average traveler.ratings_quantity traveler.number_of_completed_trips traveler.number_of_trips",
-  }).populate({
-    path: "shipments",
-    select: "-createdAt -updatedAt",
-  });
-  next();
-});
-
 const Trip = mongoose.model("Trip", tripSchema);
 
 module.exports = Trip;
