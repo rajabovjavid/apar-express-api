@@ -47,11 +47,14 @@ exports.createOne = (Model) =>
     });
   });
 
-exports.getOne = (Model, popOptions) =>
+exports.getOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
-    if (popOptions) query = query.populate(popOptions);
-    const doc = await query;
+    const features = new APIFeatures(
+      Model.findById(req.params.id),
+      req.query
+    ).limitFields();
+    if (req.body.popOptions) features.populate(req.body.popOptions);
+    const doc = await features.query;
 
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
@@ -73,6 +76,7 @@ exports.getAll = (Model) =>
       .limitFields()
       .paginate();
     // const doc = await features.query.explain();
+    if (req.body.popOptions) features.populate(req.body.popOptions);
     const doc = await features.query;
 
     // SEND RESPONSE
