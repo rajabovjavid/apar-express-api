@@ -55,6 +55,7 @@ exports.calculatePricePerKg = catchAsync(async (req, res, next) => {
   next();
 });
 
+// not for admin routes
 exports.beforeGetAllTrips = (req, res, next) => {
   const pickup_deadline = {};
   pickup_deadline.gte = req.query.pickup_deadline || new Date();
@@ -73,12 +74,31 @@ exports.beforeGetAllTrips = (req, res, next) => {
   next();
 };
 
+exports.beforeGetTrip = (req, res, next) => {
+  if (!req.query.populate) return next();
+
+  const popOptions = [];
+  const popFields = req.query.populate.split(",").join(" ");
+
+  if (popFields.includes("shipments")) {
+    popOptions.push({
+      path: "shipments",
+      select: "-createdAt -updatedAt",
+    });
+  }
+  if (popFields.includes("traveler")) {
+    popOptions.push({
+      path: "traveler",
+      select:
+        "traveler.ratings_average traveler.ratings_quantity traveler.number_of_completed_trips traveler.number_of_trips",
+    });
+  }
+  if (popOptions.length > 0) req.body.popOptions = popOptions;
+  next();
+};
+
 exports.getTrip = factory.getOne(Trip);
-
 exports.getAllTrips = factory.getAll(Trip);
-
 exports.createTrip = factory.createOne(Trip);
-
 exports.updateTrip = factory.updateOne(Trip);
-
 exports.deleteTrip = factory.deleteOne(Trip);

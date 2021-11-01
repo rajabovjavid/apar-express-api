@@ -16,7 +16,12 @@ router.patch("/resetPassword/:token", authController.resetPassword);
 router.use(authController.protect);
 
 router.patch("/updateMyPassword", authController.updatePassword);
-router.get("/me", userController.getMe, userController.getUser);
+router.get(
+  "/me",
+  userController.getMe,
+  userController.beforeGetUser,
+  userController.getUser
+);
 router.patch("/updateMe", userController.updateMe);
 
 router.get("/signedUrl", s3Controller.getSignedUrl);

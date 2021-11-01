@@ -1,16 +1,13 @@
-const User = require("../models/userModel");
 const City = require("../models/cityModel");
-const Shipment = require("../models/shipmentModel");
-const Trip = require("../models/tripModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
 
 // user related operations
-exports.getUser = factory.getOne(User);
-exports.getAllUsers = factory.getAll(User);
-exports.updateUser = factory.updateOne(User); // Do NOT update passwords with this!
-exports.deleteUser = factory.deleteOne(User);
+
+// shipment related operations
+
+// trip related operations
 
 // city related operations
 exports.createCity = factory.createOne(City);
@@ -60,9 +57,3 @@ exports.addDistance = catchAsync(async (req, res, next) => {
     },
   });
 });
-
-// shipment related operations
-exports.getAllShipments = factory.getAll(Shipment);
-
-// trip related operations
-exports.getAllTrips = factory.getAll(Trip);

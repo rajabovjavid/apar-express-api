@@ -8,7 +8,7 @@ const router = express.Router();
 router
   .route("/")
   .get(tripController.beforeGetAllTrips, tripController.getAllTrips); // for TripListScreen
-router.route("/:id").get(tripController.getTrip);
+router.route("/:id").get(tripController.beforeGetTrip, tripController.getTrip);
 
 // only signedIn users
 router.use(authController.protect);
