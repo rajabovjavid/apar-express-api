@@ -7,6 +7,12 @@ const tripSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
+    traveler_ratings_average: {
+      // TODO - need to update very
+      type: Number,
+      required: true,
+      default: 0,
+    },
     origin: {
       type: String,
       required: true,
@@ -16,6 +22,12 @@ const tripSchema = new mongoose.Schema(
       type: String,
       required: true,
       // enum: ["Gəncə", "Bakı"],
+    },
+    region: {
+      type: String,
+      required: true,
+      enum: ["local", "global"],
+      default: "local",
     },
     pickup_deadline: {
       type: Date,
@@ -51,16 +63,14 @@ const tripSchema = new mongoose.Schema(
       default: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-tripSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "traveler",
-    select:
-      "traveler.total_rating traveler.number_of_completed_trips traveler.number_of_trips",
-  });
-  next();
+// Virtual populate
+tripSchema.virtual("shipments", {
+  ref: "Shipment",
+  foreignField: "trip",
+  localField: "_id",
 });
 
 const Trip = mongoose.model("Trip", tripSchema);

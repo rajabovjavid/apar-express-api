@@ -5,8 +5,10 @@ const authController = require("../controllers/authController");
 
 const router = express.Router();
 
-router.route("/").get(tripController.getAllTrips);
-router.route("/:id").get(tripController.getTrip);
+router
+  .route("/")
+  .get(tripController.beforeGetAllTrips, tripController.getAllTrips); // for TripListScreen
+router.route("/:id").get(tripController.beforeGetTrip, tripController.getTrip);
 
 // only signedIn users
 router.use(authController.protect);
@@ -15,7 +17,11 @@ router.use(userController.isVerified);
 
 router
   .route("/")
-  .post(tripController.calculatePricePerKg, tripController.createTrip);
+  .post(
+    tripController.calculatePricePerKg,
+    tripController.beforeCreateTrip,
+    tripController.createTrip
+  );
 router
   .route("/:id")
   .patch(tripController.updateTrip)

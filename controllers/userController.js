@@ -3,11 +3,6 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
 
-exports.getMe = (req, res, next) => {
-  req.params.id = req.user.id;
-  next();
-};
-
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -64,4 +59,35 @@ exports.isVerified = (req, res, next) => {
   next();
 };
 
+exports.beforeGetUser = (req, res, next) => {
+  if (!req.query.populate) return next();
+
+  const popOptions = [];
+  const popFields = req.query.populate.split(",").join(" ");
+
+  if (popFields.includes("trips")) {
+    popOptions.push({
+      path: "trips",
+      select: "-createdAt -updatedAt",
+    });
+  }
+  if (popFields.includes("shipments")) {
+    popOptions.push({
+      path: "shipments",
+      select: "-createdAt -updatedAt",
+    });
+  }
+
+  if (popOptions.length > 0) req.body.popOptions = popOptions;
+  next();
+};
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
+exports.updateUser = factory.updateOne(User); // Do NOT update passwords with this!
+exports.deleteUser = factory.deleteOne(User);

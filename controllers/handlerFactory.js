@@ -47,11 +47,14 @@ exports.createOne = (Model) =>
     });
   });
 
-exports.getOne = (Model, popOptions) =>
+exports.getOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
-    if (popOptions) query = query.populate(popOptions);
-    const doc = await query;
+    const features = new APIFeatures(
+      Model.findById(req.params.id),
+      req.query
+    ).limitFields();
+    if (req.body.popOptions) features.populate(req.body.popOptions);
+    const doc = await features.query;
 
     if (!doc) {
       return next(new AppError("No document found with that ID", 404));
@@ -67,15 +70,13 @@ exports.getOne = (Model, popOptions) =>
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    // To allow for nested GET reviews on tour (hack)
-    const filter = {};
-
-    const features = new APIFeatures(Model.find(filter), req.query)
+    const features = new APIFeatures(Model.find(), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
     // const doc = await features.query.explain();
+    if (req.body.popOptions) features.populate(req.body.popOptions);
     const doc = await features.query;
 
     // SEND RESPONSE

@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
+      select: false,
       enum: ["user", "admin"],
       default: "user",
       immutable: (doc) => doc.role !== "ADMIN",
@@ -76,7 +77,15 @@ const userSchema = new mongoose.Schema(
         required: true,
         default: 0,
       },
-      total_rating: {
+      ratings_average: {
+        type: Number,
+        required: true,
+        default: 1,
+        min: [1, "Rating must be above 1.0"],
+        max: [5, "Rating must be below 5.0"],
+        set: (val) => Math.round(val * 10) / 10, // 4.666666, 46.6666, 47, 4.7
+      },
+      ratings_quantity: {
         type: Number,
         required: true,
         default: 0,
@@ -105,8 +114,20 @@ const userSchema = new mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+// Virtual populate
+userSchema.virtual("shipments", {
+  ref: "Shipment",
+  foreignField: "sender",
+  localField: "_id",
+});
+userSchema.virtual("trips", {
+  ref: "Trip",
+  foreignField: "traveler",
+  localField: "_id",
+});
 
 // hashing password before saving user
 userSchema.pre("save", async function (next) {
