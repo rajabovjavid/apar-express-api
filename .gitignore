@@ -78,3 +78,6 @@ config.env
 
 public/img/
 db design.dmm
+.vscode/launch.json
+
+docs/
