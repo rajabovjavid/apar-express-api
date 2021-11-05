@@ -51,6 +51,14 @@ const shipmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// shipmentSchema.pre(/^find/, function (next) {
+// this.populate({
+//   path: "trip",
+//   select: "origin destination pickup_deadline delivery_deadline traveler",
+// });
+//   next();
+// });
+
 const Shipment = mongoose.model("Shipment", shipmentSchema);
 
 module.exports = Shipment;
