@@ -21,6 +21,10 @@ const citySchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    country: {
+      type: String,
+      required: true,
+    },
     distances_to: [DistanceToSchema],
   },
   { timestamps: true }

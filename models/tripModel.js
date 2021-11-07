@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// const validator = require("validator");
 
 const tripSchema = new mongoose.Schema(
   {
@@ -51,6 +52,13 @@ const tripSchema = new mongoose.Schema(
     price_per_kg: {
       type: Number,
       required: true,
+      validate: {
+        // This only works on CREATE and SAVE!!!
+        validator: function (val) {
+          return val <= this.calculated_price_per_kg;
+        },
+        message: "price should be less or equal than calculated price",
+      },
     },
     is_active: {
       type: Boolean,
