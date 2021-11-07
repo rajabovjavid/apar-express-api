@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      select: false,
       enum: ["user", "admin"],
       default: "user",
       immutable: (doc) => doc.role !== "ADMIN",

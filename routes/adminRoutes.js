@@ -10,6 +10,18 @@ const router = express.Router();
 
 // login required for below
 router.use(authController.protect);
+
+router
+  .route("/calculatePrice")
+  .get(tripController.calculatePricePerKg, (req, res) => {
+    res.status(200).json({
+      status: "success",
+      data: {
+        calculatedPrice: req.body.calculated_price_per_kg,
+      },
+    });
+  });
+
 // only admins can reach below
 router.use(authController.restrictTo("admin"));
 

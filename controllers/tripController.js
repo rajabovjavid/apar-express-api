@@ -13,8 +13,6 @@ exports.beforeCreateTrip = catchAsync(async (req, res, next) => {
     traveler_ratings_average: req.user.traveler.ratings_average,
     pickup_deadline: new Date(req.body.pickup_deadline),
     delivery_deadline: new Date(req.body.delivery_deadline),
-    calculated_price_per_kg: req.body.calculated_price_per_kg,
-    price_per_kg: req.body.calculated_price_per_kg,
   };
   next();
 });
@@ -41,12 +39,15 @@ exports.calculatePricePerKg = catchAsync(async (req, res, next) => {
   const diffTime = Math.abs(delivery_deadline - pickup_deadline);
   const diffInHours = Math.ceil(diffTime / (1000 * 60 * 60));
 
+  // setting region
+  req.body.region =
+    originCity.country === destinationCity.country ? "local" : "global";
+
   // setting coefficient
-  let regionCoefficient;
-  if (req.body.region === "local")
-    regionCoefficient = constants.localCoefficient;
-  else if (req.body.region === "global")
-    regionCoefficient = constants.globalCoefficient;
+  const regionCoefficient =
+    req.body.region === "local"
+      ? constants.localCoefficient
+      : constants.globalCoefficient;
 
   // final formula
   const calculatedValue = (distance / diffInHours) * regionCoefficient;
