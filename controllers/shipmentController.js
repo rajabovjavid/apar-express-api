@@ -1,4 +1,5 @@
 const Shipment = require("../models/shipmentModel");
+const AppError = require("../utils/appError");
 
 const catchAsync = require("../utils/catchAsync");
 // const AppError = require("../utils/appError");
@@ -30,9 +31,17 @@ exports.createShipment = catchAsync(async (req, res) => {
   res.status(201).json({
     status: "success",
     data: {
-      data: shipment,
+      shipment,
     },
   });
+});
+
+exports.isOwner = catchAsync(async (req, res, next) => {
+  const sender = req.res_data.data.shipment.sender.toString();
+  if (req.user.id !== sender) {
+    return next(new AppError("You are not owner of this shipment", 401));
+  }
+  next();
 });
 
 exports.getShipment = factory.getOne(Shipment);

@@ -53,6 +53,14 @@ exports.calculatePricePerKg = catchAsync(async (req, res, next) => {
   const calculatedValue = (distance / diffInHours) * regionCoefficient;
   req.body.calculated_price_per_kg = Math.round(calculatedValue * 10) / 10;
 
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+    data: {
+      calculatedPrice: req.body.calculated_price_per_kg,
+    },
+  };
+
   next();
 });
 
@@ -95,6 +103,27 @@ exports.beforeGetTrip = (req, res, next) => {
     });
   }
   if (popOptions.length > 0) req.body.popOptions = popOptions;
+  next();
+};
+
+exports.isOwner = catchAsync(async (req, res, next) => {
+  const traveler = req.res_data.data.trip.traveler.toString();
+  if (req.user.id !== traveler) {
+    return next(new AppError("You are not owner of this trip", 401));
+  }
+  next();
+});
+
+exports.beforeGetMyTrip = (req, res, next) => {
+  req.body.popOptions = [
+    {
+      path: "shipments",
+      select: "-createdAt -updatedAt -receiver_number",
+    },
+  ];
+
+  req.query.fields = "-traveler_ratings_average,-createdAt,-updatedAt";
+
   next();
 };
 
