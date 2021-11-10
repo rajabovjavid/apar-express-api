@@ -27,24 +27,30 @@ exports.updateOne = (Model) =>
       return next(new AppError("No document found with that ID", 404));
     }
 
-    res.status(200).json({
+    req.res_data = {
+      status_code: 200,
       status: "success",
       data: {
-        data: doc,
+        [Model.modelName.toLowerCase()]: doc,
       },
-    });
+    };
+
+    next();
   });
 
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
 
-    res.status(201).json({
+    req.res_data = {
+      status_code: 201,
       status: "success",
       data: {
-        data: doc,
+        [Model.modelName.toLowerCase()]: doc,
       },
-    });
+    };
+
+    next();
   });
 
 exports.getOne = (Model) =>
@@ -60,12 +66,15 @@ exports.getOne = (Model) =>
       return next(new AppError("No document found with that ID", 404));
     }
 
-    res.status(200).json({
+    req.res_data = {
+      status_code: 200,
       status: "success",
       data: {
-        data: doc,
+        [Model.modelName.toLowerCase()]: doc,
       },
-    });
+    };
+
+    next();
   });
 
 exports.getAll = (Model) =>
@@ -79,12 +88,22 @@ exports.getAll = (Model) =>
     if (req.body.popOptions) features.populate(req.body.popOptions);
     const doc = await features.query;
 
-    // SEND RESPONSE
-    res.status(200).json({
+    req.res_data = {
+      status_code: 200,
       status: "success",
-      results: doc.length,
       data: {
-        data: doc,
+        length: doc.length,
+        [`${Model.modelName.toLowerCase()}s`]: doc,
       },
-    });
+    };
+
+    next();
   });
+
+exports.sendResponse = (req, res) => {
+  const { status_code, status, data } = req.res_data;
+  res.status(status_code).json({
+    status,
+    data,
+  });
+};
