@@ -17,12 +17,10 @@ const tripSchema = new mongoose.Schema(
     origin: {
       type: String,
       required: true,
-      // enum: ["Gəncə", "Bakı"],
     },
     destination: {
       type: String,
       required: true,
-      // enum: ["Gəncə", "Bakı"],
     },
     region: {
       type: String,
