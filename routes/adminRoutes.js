@@ -14,7 +14,7 @@ router.use(authController.protect);
 
 router
   .route("/calculatePrice")
-  .get(tripController.calculatePricePerKg, sendResponse);
+  .post(tripController.calculatePricePerKg, sendResponse);
 
 // only admins can reach below
 router.use(authController.restrictTo("admin"));
