@@ -14,7 +14,7 @@ router.use(authController.protect);
 
 router
   .route("/calculatePrice")
-  .get(tripController.calculatePricePerKg, sendResponse);
+  .post(tripController.calculatePricePerKg, sendResponse);
 
 // only admins can reach below
 router.use(authController.restrictTo("admin"));
@@ -45,7 +45,8 @@ router
   .route("/cities")
   .get(adminController.getAllCities, sendResponse)
   .post(adminController.createCity, sendResponse);
-router.route("/cities/:id").get(adminController.getCity);
+router.route("/cities/:id").get(adminController.getCity, sendResponse);
 router.route("/cities/:id/addDistance").patch(adminController.addDistance);
+router.route("/cities/:id/addDistricts").patch(adminController.addDistricts);
 
 module.exports = router;

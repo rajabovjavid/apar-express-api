@@ -57,3 +57,20 @@ exports.addDistance = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.addDistricts = catchAsync(async (req, res, next) => {
+  const districts = req.body.districts.map((item) => ({ district_name: item }));
+  const updatedCity = await City.findByIdAndUpdate(
+    req.params.id,
+    {
+      $push: {
+        districts: { $each: districts },
+      },
+    },
+    { new: true }
+  );
+  res.status(201).json({
+    status: "success",
+    city: updatedCity,
+  });
+});
