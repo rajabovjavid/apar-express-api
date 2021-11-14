@@ -58,7 +58,6 @@ exports.calculatePricePerKg = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       calculatedPrice: req.body.calculated_price_per_kg,
-      extra_info: 1,
     },
   };
 
