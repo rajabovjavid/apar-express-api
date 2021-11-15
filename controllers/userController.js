@@ -90,7 +90,7 @@ exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
 };
-
+// naber
 exports.getUser = factory.getOne(User);
 exports.getAllUsers = factory.getAll(User);
 exports.updateUser = factory.updateOne(User); // Do NOT update passwords with this!
