@@ -7,7 +7,7 @@ const constants = require("../utils/constants");
 const factory = require("./handlerFactory");
 
 exports.beforeCreateTrip = catchAsync(async (req, res, next) => {
-  // origin districts check
+  /* // origin districts check
   if (!req.body.ori_districts?.length) {
     // if body.ori_districts is undefined or empty
     req.body.ori_districts = req.originCity.districts;
@@ -44,7 +44,7 @@ exports.beforeCreateTrip = catchAsync(async (req, res, next) => {
     )
   ) {
     return next(new AppError(`Unsupported category`, 404));
-  }
+  } */
 
   // assignin remaining parts
   req.body.traveler = req.user._id;
