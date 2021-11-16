@@ -17,13 +17,13 @@ const tripSchema = new mongoose.Schema(
     origin: {
       type: String,
       required: true,
-      // enum: ["Gəncə", "Bakı"],
     },
     destination: {
       type: String,
       required: true,
-      // enum: ["Gəncə", "Bakı"],
     },
+    ori_districts: [{ type: String, required: true }],
+    dest_districts: [{ type: String, required: true }],
     region: {
       type: String,
       required: true,
@@ -42,6 +42,7 @@ const tripSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    categories: [{ type: String, required: true }],
     description: {
       type: String,
     },

@@ -14,16 +14,6 @@ const DistanceToSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const DistrictSchema = new mongoose.Schema(
-  {
-    district_name: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
 const citySchema = new mongoose.Schema(
   {
     city_name: {
@@ -36,7 +26,7 @@ const citySchema = new mongoose.Schema(
       required: true,
     },
     distances_to: [DistanceToSchema],
-    districts: [DistrictSchema],
+    districts: [{ type: String, required: true }],
   },
   { timestamps: true }
 );
