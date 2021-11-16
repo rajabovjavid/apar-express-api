@@ -22,6 +22,8 @@ const tripSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    ori_districts: [{ type: String, required: true }],
+    dest_districts: [{ type: String, required: true }],
     region: {
       type: String,
       required: true,
@@ -40,6 +42,7 @@ const tripSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    categories: [{ type: String, required: true }],
     description: {
       type: String,
     },
