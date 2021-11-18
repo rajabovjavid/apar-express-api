@@ -57,3 +57,24 @@ exports.addDistance = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.addDistricts = catchAsync(async (req, res, next) => {
+  const city = await City.findByIdAndUpdate(
+    req.params.id,
+    {
+      $push: {
+        districts: { $each: req.body.districts },
+      },
+    },
+    { new: true }
+  );
+
+  if (!city) {
+    return next(new AppError("No city found with that ID", 404));
+  }
+
+  res.status(201).json({
+    status: "success",
+    city,
+  });
+});

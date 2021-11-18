@@ -1,11 +1,12 @@
 const Shipment = require("../models/shipmentModel");
+const AppError = require("../utils/appError");
 
 const catchAsync = require("../utils/catchAsync");
 // const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
 
 exports.createShipment = catchAsync(async (req, res) => {
-  const shipment = await Shipment.create({
+  let shipment = await Shipment.create({
     sender: req.user.id,
     trip: req.body.trip,
     package: {
@@ -22,12 +23,25 @@ exports.createShipment = catchAsync(async (req, res) => {
     },
   });
 
+  shipment = await Shipment.populate(shipment, {
+    path: "trip",
+    select: "origin destination pickup_deadline delivery_deadline traveler",
+  });
+
   res.status(201).json({
     status: "success",
     data: {
-      data: shipment,
+      shipment,
     },
   });
+});
+
+exports.isOwner = catchAsync(async (req, res, next) => {
+  const sender = req.res_data.data.shipment.sender.toString();
+  if (req.user.id !== sender) {
+    return next(new AppError("You are not owner of this shipment", 401));
+  }
+  next();
 });
 
 exports.getShipment = factory.getOne(Shipment);

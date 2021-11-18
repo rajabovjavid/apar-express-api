@@ -68,13 +68,17 @@ exports.beforeGetUser = (req, res, next) => {
   if (popFields.includes("trips")) {
     popOptions.push({
       path: "trips",
-      select: "-createdAt -updatedAt",
+      select: "origin destination pickup_deadline delivery_deadline",
     });
   }
   if (popFields.includes("shipments")) {
     popOptions.push({
       path: "shipments",
-      select: "-createdAt -updatedAt",
+      select: "status total_price",
+      populate: {
+        path: "trip",
+        select: "origin destination pickup_deadline delivery_deadline traveler",
+      },
     });
   }
 

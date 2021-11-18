@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// const validator = require("validator");
 
 const tripSchema = new mongoose.Schema(
   {
@@ -16,13 +17,13 @@ const tripSchema = new mongoose.Schema(
     origin: {
       type: String,
       required: true,
-      // enum: ["Gəncə", "Bakı"],
     },
     destination: {
       type: String,
       required: true,
-      // enum: ["Gəncə", "Bakı"],
     },
+    ori_districts: [{ type: String, required: true }],
+    dest_districts: [{ type: String, required: true }],
     region: {
       type: String,
       required: true,
@@ -41,6 +42,7 @@ const tripSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    categories: [{ type: String, required: true }],
     description: {
       type: String,
     },
@@ -51,6 +53,13 @@ const tripSchema = new mongoose.Schema(
     price_per_kg: {
       type: Number,
       required: true,
+      validate: {
+        // This only works on CREATE and SAVE!!!
+        validator: function (val) {
+          return val <= this.calculated_price_per_kg;
+        },
+        message: "price should be less or equal than calculated price",
+      },
     },
     is_active: {
       type: Boolean,

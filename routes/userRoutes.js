@@ -2,6 +2,7 @@ const express = require("express");
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
 const s3Controller = require("../controllers/s3Controller");
+const { sendResponse } = require("../controllers/handlerFactory");
 
 const router = express.Router();
 
@@ -20,7 +21,8 @@ router.get(
   "/me",
   userController.getMe,
   userController.beforeGetUser,
-  userController.getUser
+  userController.getUser,
+  sendResponse
 );
 router.patch("/updateMe", userController.updateMe);
 
