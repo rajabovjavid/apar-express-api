@@ -5,7 +5,7 @@ module.exports = class Email {
   constructor(user) {
     this.to = user.email;
     this.firstName = user.name_surname.split(" ")[0];
-    this.from = `Javid Rajabov <${process.env.EMAIL_FROM}>`;
+    this.from = process.env.EMAIL_FROM; // `Gönder-Getsin <${process.env.EMAIL_FROM}>`;
   }
 
   newTransport() {
@@ -35,11 +35,22 @@ module.exports = class Email {
     const mailOptions = {
       from: this.from,
       to: this.to,
-      subject: "Welcome OurNewProject",
-      text: `Hi ${this.firstName}, welcome to the OurNewProject Family!`,
+      subject: "Welcome Gonder-Getsin",
+      text: `Hi ${this.firstName}, welcome to the Gonder-Getsin Family!`,
     };
 
     // Create a transport and send email
+    await this.newTransport().sendMail(mailOptions);
+  }
+
+  async sendEmailVerification(url) {
+    const mailOptions = {
+      from: this.from,
+      to: this.to,
+      subject: "Email Verification",
+      text: `Hi ${this.firstName}. Click this ${url} to verify your email`,
+    };
+
     await this.newTransport().sendMail(mailOptions);
   }
 

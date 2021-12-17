@@ -84,18 +84,18 @@ app.use(
 app.use(compression());
 
 // Test middleware
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  // console.log(req.cookies);
-  next();
-});
+// app.use((req, res, next) => {
+//   req.requestTime = new Date().toISOString();
+//   // console.log(req.cookies);
+//   next();
+// });
 
 // 3) ROUTES
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/trips", tripRouter);
 app.use("/api/v1/shipments", shipmentRouter);
-
+app.get("/favicon.ico", (req, res) => res.status(204));
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
