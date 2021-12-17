@@ -34,16 +34,29 @@ const userSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: "default.jpg",
     },
     id_card: {
       type: String,
     },
     verification: {
-      type: String,
-      required: true,
-      default: "Not Uploaded",
-      enum: ["Not Uploaded", "Uploaded", "Verified"],
+      email: {
+        type: Boolean,
+        default: false,
+      },
+      phone_number: {
+        type: Boolean,
+        default: false,
+      },
+      image: {
+        type: String,
+        default: "Not Uploaded",
+        enum: ["Not Uploaded", "Uploaded", "Verified"],
+      },
+      id_card: {
+        type: String,
+        default: "Not Uploaded",
+        enum: ["Not Uploaded", "Uploaded", "Verified"],
+      },
     },
     social_accounts: {
       facebook: {
@@ -109,9 +122,27 @@ const userSchema = new mongoose.Schema(
         },
       },
     },
+    token: {
+      password_reset_token: {
+        type: String,
+      },
+      password_reset_expires: {
+        type: Date,
+      },
+      email_verification_token: {
+        type: String,
+      },
+      email_verification_expires: {
+        type: Date,
+      },
+      phone_verification_token: {
+        type: String,
+      },
+      phone_verification_expires: {
+        type: Date,
+      },
+    },
     passwordChangedAt: Date,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -167,17 +198,17 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(32).toString("hex");
+userSchema.methods.createToken = function (tokenField) {
+  const token = crypto.randomBytes(32).toString("hex");
 
-  this.passwordResetToken = crypto
+  this.token[`${tokenField}_token`] = crypto
     .createHash("sha256")
-    .update(resetToken)
+    .update(token)
     .digest("hex");
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  this.token[`${tokenField}_expires`] = Date.now() + 10 * 60 * 1000;
 
-  return resetToken;
+  return token;
 };
 
 const User = mongoose.model("User", userSchema);

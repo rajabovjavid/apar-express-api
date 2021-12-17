@@ -45,7 +45,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
   });
 
-  // await new Email(newUser).sendWelcome();
+  await new Email(newUser).sendWelcome();
 
   createSendToken(newUser, 201, req, res);
 });
@@ -175,7 +175,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 
   // 2) Generate the random reset token
-  const resetToken = user.createPasswordResetToken();
+  const resetToken = user.createToken("password_reset");
   await user.save({ validateBeforeSave: false });
 
   // 3) Send it to user's email
@@ -190,8 +190,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       message: "Token sent to email!",
     });
   } catch (err) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    user.token.password_reset_token = undefined;
+    user.token.password_reset_expires = undefined;
     await user.save({ validateBeforeSave: false });
 
     return next(
@@ -209,8 +209,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .digest("hex");
 
   const user = await User.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() },
+    "token.password_reset_token": hashedToken,
+    "token.password_reset_expires": { $gt: Date.now() },
   });
 
   // 2) If token has not expired, and there is user, set the new password
@@ -218,9 +218,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("Token is invalid or has expired", 400));
   }
   user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
-  user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+  user.token.password_reset_token = undefined;
+  user.token.password_reset_expires = undefined;
   await user.save();
 
   // 3) Update changedPasswordAt property for the user
@@ -244,4 +243,59 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // 4) Log user in, send JWT
   createSendToken(user, 200, req, res);
+});
+
+exports.sendEmailVerification = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  const emailVerificationToken = user.createToken("email_verification");
+  await user.save();
+
+  try {
+    const emailVerificationUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/verifyEmail/${emailVerificationToken}`;
+    await new Email(user).sendEmailVerification(emailVerificationUrl);
+
+    res.status(200).json({
+      status: "success",
+      message: "Verification URL sent to email",
+    });
+  } catch (err) {
+    user.token.email_verification_token = undefined;
+    user.token.email_verification_expires = undefined;
+    await user.save();
+
+    return next(
+      new AppError("There was an error sending the email. Try again later!"),
+      500
+    );
+  }
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  // 1) Get user based on the token
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    "token.email_verification_token": hashedToken,
+    "token.email_verification_expires": { $gt: Date.now() },
+  });
+
+  // 2) If token has not expired, and there is user, verify email
+  if (!user) {
+    return next(new AppError("Token is invalid or has expired", 400));
+  }
+  user.verification.email = true;
+  user.token.email_verification_token = undefined;
+  user.token.email_verification_expires = undefined;
+  await user.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "email verified",
+  });
 });
