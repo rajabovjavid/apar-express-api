@@ -45,7 +45,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
   });
 
-  // await new Email(newUser).sendWelcome();
+  try {
+    await new Email(newUser).sendWelcome();
+  } catch (error) {
+    return next(new AppError(error), 500);
+  }
 
   createSendToken(newUser, 201, req, res);
 });
