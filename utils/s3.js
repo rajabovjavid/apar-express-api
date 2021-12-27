@@ -6,16 +6,29 @@ const s3 = new S3({
   secretAccessKey: process.env.AWS_SECRET_KEY,
 });
 
-const getSignedUrl = async (key, methodObject) => {
-  const tempObject = {
+exports.getSignedUrl = async (key, methodObject) => {
+  const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
   };
 
-  if (methodObject === "putObject") tempObject.ContentType = "image/*";
+  if (methodObject === "putObject") params.ContentType = "image/*";
 
-  const url = await s3.getSignedUrl(methodObject, tempObject);
+  const url = await s3.getSignedUrl(methodObject, params);
   return url;
 };
 
-module.exports = getSignedUrl;
+exports.isKeyExist = async (key) => {
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: key,
+  };
+  try {
+    await s3.headObject(params).promise();
+  } catch (error) {
+    if (error.code === "NotFound") {
+      return false;
+    }
+  }
+  return true;
+};
