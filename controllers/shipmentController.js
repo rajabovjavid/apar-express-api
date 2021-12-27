@@ -2,9 +2,9 @@ const Shipment = require("../models/shipmentModel");
 const AppError = require("../utils/appError");
 
 const catchAsync = require("../utils/catchAsync");
+const s3 = require("../utils/s3");
 // const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
-const getSignedUrl = require("../utils/s3");
 
 exports.createShipment = catchAsync(async (req, res) => {
   let shipment = await Shipment.create({
@@ -49,7 +49,7 @@ exports.getSignedUrlForPackage = catchAsync(async (req, res, next) => {
   // if there is many images in one package then?
   const key = `packages/${req.params.id}.jpeg`;
 
-  const url = await getSignedUrl(key, req.methodObject);
+  const url = await s3.getSignedUrl(key, req.methodObject);
 
   res.send({ key, url });
 });

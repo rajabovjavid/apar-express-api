@@ -12,12 +12,15 @@ router.get("/logout", authController.logout);
 router.post("/forgotPassword", authController.forgotPassword);
 router.patch("/resetPassword/:token", authController.resetPassword);
 
-router.get("/verifyEmail/:token", authController.verifyEmail);
+router.get("/verification/verifyEmail/:token", authController.verifyEmail);
 
 // login required for below
 router.use(authController.protect);
 
-router.post("/sendEmailVerification", authController.sendEmailVerification);
+router.post(
+  "/verification/sendEmailVerification",
+  authController.sendEmailVerification
+);
 
 router.patch("/updateMyPassword", authController.updatePassword);
 router.get(
@@ -48,4 +51,9 @@ router.get(
   userController.getSignedUrlForUser
 );
 
+router.patch(
+  "/verification/verifyUpload",
+  userController.verifyUpload,
+  userController.verifyImage
+);
 module.exports = router;

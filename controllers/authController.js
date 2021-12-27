@@ -163,6 +163,7 @@ exports.restrictTo = (...roles) => (req, res, next) => {
       new AppError("You do not have permission to perform this action", 403)
     );
   }
+  req.admin = req.user;
 
   next();
 };
@@ -254,7 +255,7 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
   try {
     const emailVerificationUrl = `${req.protocol}://${req.get(
       "host"
-    )}/api/v1/users/verifyEmail/${emailVerificationToken}`;
+    )}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
     await new Email(user).sendEmailVerification(emailVerificationUrl);
 
     res.status(200).json({

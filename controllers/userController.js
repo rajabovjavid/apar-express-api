@@ -1,7 +1,7 @@
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
-const getSignedUrl = require("../utils/s3");
 const AppError = require("../utils/appError");
+const s3 = require("../utils/s3");
 const factory = require("./handlerFactory");
 
 const filterObj = (obj, ...allowedFields) => {
@@ -99,9 +99,83 @@ exports.getSignedUrlForUser = catchAsync(async (req, res, next) => {
     key = `user-ids/${req.user.id}.jpeg`;
   else return next(new AppError("you can't get signed url for this", 400));
 
-  const url = await getSignedUrl(key, req.methodObject);
+  const url = await s3.getSignedUrl(key, req.methodObject);
 
   res.send({ key, url });
+});
+
+exports.verifyUpload = catchAsync(async (req, res, next) => {
+  let key;
+  let updateObj;
+  if (req.query.key === "user_image") {
+    key = `user-images/${req.user.id}.jpeg`;
+    updateObj = {
+      "verification.image": "Uploaded",
+    };
+  } else if (req.query.key === "user_id_image") {
+    key = `user-ids/${req.user.id}.jpeg`;
+    updateObj = {
+      "verification.id_card": "Uploaded",
+    };
+  } else return next(new AppError("specify the key", 400));
+
+  if (!(await s3.isKeyExist(key))) {
+    return next(new AppError("image not uploaded to s3", 400));
+  }
+
+  // Update user
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  return next();
+
+  // eslint-disable-next-line no-unreachable
+  res.status(200).json({
+    status: "success",
+    data: {
+      user: updatedUser,
+    },
+  });
+});
+
+exports.verifyImage = catchAsync(async (req, res, next) => {
+  let updateObj;
+  if (req.query.key === "user_image") {
+    updateObj = {
+      "verification.image": "Verified",
+    };
+  } else if (req.query.key === "user_id_image") {
+    updateObj = {
+      "verification.id_card": "Verified",
+    };
+  } else return next(new AppError("specify the key", 400));
+
+  // Update user
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: updateObj,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      user: updatedUser,
+    },
+  });
 });
 
 exports.getUser = factory.getOne(User);
