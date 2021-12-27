@@ -1,7 +1,6 @@
 const express = require("express");
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
-const s3Controller = require("../controllers/s3Controller");
 const { sendResponse } = require("../controllers/handlerFactory");
 
 const router = express.Router();
@@ -30,6 +29,23 @@ router.get(
 );
 router.patch("/updateMe", userController.updateMe);
 
-router.get("/signedUrl", s3Controller.getSignedUrl);
+router.get(
+  "/signedUrl/get",
+  (req, res, next) => {
+    if (req.query.user_id) req.user = { id: req.query.user_id };
+    req.methodObject = "getObject";
+    next();
+  },
+  userController.getSignedUrlForUser
+);
+
+router.get(
+  "/signedUrl/put",
+  (req, res, next) => {
+    req.methodObject = "putObject";
+    next();
+  },
+  userController.getSignedUrlForUser
+);
 
 module.exports = router;

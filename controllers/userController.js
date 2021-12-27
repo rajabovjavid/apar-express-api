@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
+const getSignedUrl = require("../utils/s3");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
 
@@ -90,6 +91,18 @@ exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
 };
+
+exports.getSignedUrlForUser = catchAsync(async (req, res, next) => {
+  let key;
+  if (req.query.key === "user_image") key = `user-images/${req.user.id}.jpeg`;
+  else if (req.query.key === "user_id_image")
+    key = `user-ids/${req.user.id}.jpeg`;
+  else return next(new AppError("you can't get signed url for this", 400));
+
+  const url = await getSignedUrl(key, req.methodObject);
+
+  res.send({ key, url });
+});
 
 exports.getUser = factory.getOne(User);
 exports.getAllUsers = factory.getAll(User);

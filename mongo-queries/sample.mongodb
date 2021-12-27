@@ -1,0 +1,6 @@
+// MongoDB Playground
+
+// Select the database to use.
+use('OurNewProject');
+
+db.users.find({}, {email: 1})
