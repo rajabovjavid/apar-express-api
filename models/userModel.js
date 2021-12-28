@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
       email: {
         type: Boolean,
         default: false,
+        // TODO:
+        /* type: String,
+        default: "Not Sent",
+        enum: ["Not Sent", "Sent", "Verified"], */
       },
       phone_number: {
         type: Boolean,

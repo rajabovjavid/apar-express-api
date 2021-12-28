@@ -22,6 +22,15 @@ router.post(
   authController.sendEmailVerification
 );
 
+router.post(
+  "/verification/sendSmsVerification",
+  authController.sendSmsVerification
+);
+router.post(
+  "/verification/checkSmsVerification",
+  authController.checkSmsVerification
+);
+
 router.patch("/updateMyPassword", authController.updatePassword);
 router.get(
   "/me",

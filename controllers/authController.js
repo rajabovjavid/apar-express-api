@@ -5,6 +5,7 @@ const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
+const twilio = require("../utils/twilio");
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -258,6 +259,8 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
     )}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
     await new Email(user).sendEmailVerification(emailVerificationUrl);
 
+    // TODO: verification.email = "sent"
+
     res.status(200).json({
       status: "success",
       message: "Verification URL sent to email",
@@ -281,6 +284,10 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
+  // TODO: seperately check token (invalid or not) and expire
+  // if expired then
+  //    1) token and expire = undefined
+  //    2) verification.email = not sent
   const user = await User.findOne({
     "token.email_verification_token": hashedToken,
     "token.email_verification_expires": { $gt: Date.now() },
@@ -290,6 +297,9 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("Token is invalid or has expired", 400));
   }
+
+  // TODO: instead of this do:
+  //                  verification.email = verified
   user.verification.email = true;
   user.token.email_verification_token = undefined;
   user.token.email_verification_expires = undefined;
@@ -299,4 +309,33 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     status: "success",
     message: "email verified",
   });
+});
+
+exports.sendSmsVerification = catchAsync(async (req, res) => {
+  const twilioRes = await twilio.sendSmsVerification(req.user.phone_number);
+
+  // TODO: prepare proper response
+  res.status(200).json({ twilioRes });
+});
+
+exports.checkSmsVerification = catchAsync(async (req, res, next) => {
+  const twilioRes = await twilio.checkSmsVerification(
+    req.user.phone_number,
+    req.body.code
+  );
+
+  if (twilioRes.status !== "approved") {
+    return next(new AppError("Code is invalid or has expired", 400));
+  }
+  await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: { "verification.phone_number": true },
+    },
+    {
+      runValidators: true,
+    }
+  );
+  // TODO: prepare proper response
+  res.status(200).json({ twilioRes });
 });
