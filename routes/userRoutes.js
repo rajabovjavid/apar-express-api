@@ -5,12 +5,16 @@ const { sendResponse } = require("../controllers/handlerFactory");
 
 const router = express.Router();
 
-router.post("/signup", authController.signup);
-router.post("/login", authController.login);
+router.post("/signup", authController.signup, sendResponse);
+router.post("/login", authController.login, sendResponse);
 router.get("/logout", authController.logout);
 
 router.post("/forgotPassword", authController.forgotPassword);
-router.patch("/resetPassword/:token", authController.resetPassword);
+router.patch(
+  "/resetPassword/:token",
+  authController.resetPassword,
+  sendResponse
+);
 
 router.get("/verification/verifyEmail/:token", authController.verifyEmail);
 
