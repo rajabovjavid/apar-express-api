@@ -283,7 +283,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   next();
 });
 
-export const sendEmailVerification = catchAsync(async (req, res, next) => {
+exports.sendEmailVerification = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   const emailVerificationToken = user.createToken("email_verification");
