@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const s3 = require("../utils/s3");
+const constants = require("../utils/constants");
 const factory = require("./handlerFactory");
 
 const filterObj = (obj, ...allowedFields) => {
@@ -110,12 +111,12 @@ exports.verifyUpload = catchAsync(async (req, res, next) => {
   if (req.query.key === "user_image") {
     key = `user-images/${req.user.id}.jpeg`;
     updateObj = {
-      "verification.image": "Uploaded",
+      "verification.image": constants.image.uploaded,
     };
   } else if (req.query.key === "user_id_image") {
     key = `user-ids/${req.user.id}.jpeg`;
     updateObj = {
-      "verification.id_card": "Uploaded",
+      "verification.id_card": constants.image.uploaded,
     };
   } else return next(new AppError("specify the key", 400));
 
@@ -150,11 +151,11 @@ exports.verifyImage = catchAsync(async (req, res, next) => {
   let updateObj;
   if (req.query.key === "user_image") {
     updateObj = {
-      "verification.image": "Verified",
+      "verification.image": constants.image.verified,
     };
   } else if (req.query.key === "user_id_image") {
     updateObj = {
-      "verification.id_card": "Verified",
+      "verification.id_card": constants.image.verified,
     };
   } else return next(new AppError("specify the key", 400));
 

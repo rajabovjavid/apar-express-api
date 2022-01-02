@@ -53,4 +53,7 @@ router.route("/cities/:id").get(adminController.getCity, sendResponse);
 router.route("/cities/:id/addDistance").patch(adminController.addDistance);
 router.route("/cities/:id/addDistricts").patch(adminController.addDistricts);
 
+// status related routes
+router.route("/status").post(adminController.createStatus, sendResponse);
+
 module.exports = router;

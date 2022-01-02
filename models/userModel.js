@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const constants = require("../utils/constants");
 
 const userSchema = new mongoose.Schema(
   {
@@ -40,23 +41,23 @@ const userSchema = new mongoose.Schema(
     },
     verification: {
       email: {
-        type: String,
-        default: "NotSent",
-        enum: ["NotSent", "Sent", "Expired", "Verified"],
+        type: mongoose.Schema.ObjectId,
+        default: constants.email.notsent,
+        ref: "Status",
       },
       phone_number: {
-        type: Boolean,
-        default: false,
+        type: mongoose.Schema.ObjectId,
+        ref: "Status",
       },
       image: {
-        type: String,
-        default: "NotUploaded",
-        enum: ["NotUploaded", "Uploaded", "NotVerified", "Verified"],
+        type: mongoose.Schema.ObjectId,
+        default: constants.image.notuploaded,
+        ref: "Status",
       },
       id_card: {
-        type: String,
-        default: "NotUploaded",
-        enum: ["NotUploaded", "Uploaded", "NotVerified", "Verified"],
+        type: mongoose.Schema.ObjectId,
+        default: constants.image.notuploaded,
+        ref: "Status",
       },
     },
     social_accounts: {
@@ -176,6 +177,14 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  this.populate("verification.email")
+    // .populate("verification.phone_number")
+    .populate("verification.image")
+    .populate("verification.id_card");
   next();
 });
 

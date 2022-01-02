@@ -6,6 +6,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
 const twilio = require("../utils/twilio");
+const constants = require("../utils/constants");
 
 const createJwtToken = (req) => {
   const { user } = req;
@@ -294,7 +295,7 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
     )}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
     await new Email(user).sendEmailVerification(emailVerificationUrl);
 
-    user.verification.email = "Sent";
+    user.verification.email = constants.email.sent;
     await user.save();
 
     req.res_data = {
@@ -339,12 +340,12 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   }
 
   if (user.token.email_verification_expires < Date.now()) {
-    user.verification.email = "Expired";
+    user.verification.email = constants.email.expired;
     await user.save();
     return next(new AppError("Token has expired", 400));
   }
 
-  user.verification.email = "Verified";
+  user.verification.email = constants.email.verified;
   user.token.email_verification_token = undefined;
   user.token.email_verification_expires = undefined;
   await user.save();
