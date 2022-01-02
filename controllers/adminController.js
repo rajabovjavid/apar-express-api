@@ -1,4 +1,5 @@
 const City = require("../models/cityModel");
+const Status = require("../models/statusModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
@@ -78,3 +79,6 @@ exports.addDistricts = catchAsync(async (req, res, next) => {
     city,
   });
 });
+
+// status model
+exports.createStatus = factory.createOne(Status);

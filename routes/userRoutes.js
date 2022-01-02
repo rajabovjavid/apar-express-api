@@ -23,7 +23,8 @@ router.use(authController.protect);
 
 router.post(
   "/verification/sendEmailVerification",
-  authController.sendEmailVerification
+  authController.sendEmailVerification,
+  sendResponse
 );
 
 router.post(
