@@ -17,10 +17,10 @@
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }]
   },
-  "parser": "babel-eslint",
+  // "parser": "babel-eslint",
   "parserOptions": {
-    // "ecmaVersion": 2020,
-    "sourceType": "module",
-    "allowImportExportEverywhere": true
+    "ecmaVersion": 2020
+    // "sourceType": "module",
+    // "allowImportExportEverywhere": true
   }
 }
