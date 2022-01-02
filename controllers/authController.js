@@ -308,6 +308,8 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
             : "url sent to your email",
       },
     };
+
+    next();
   } catch (err) {
     user.token.email_verification_token = undefined;
     user.token.email_verification_expires = undefined;
