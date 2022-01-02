@@ -101,9 +101,10 @@ exports.getAll = (Model) =>
   });
 
 exports.sendResponse = (req, res) => {
-  const { status_code, status, data } = req.res_data;
+  const { status_code, status, data, messages } = req.res_data;
   res.status(status_code).json({
     status,
+    messages,
     data,
   });
 };

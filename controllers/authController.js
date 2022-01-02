@@ -7,35 +7,27 @@ const AppError = require("../utils/appError");
 const Email = require("../utils/email");
 const twilio = require("../utils/twilio");
 
-const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
+const createJwtToken = (req) => {
+  const { user } = req;
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
-
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id);
 
   const tokenExpireDate = new Date(
     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
   );
 
-  // res.cookie("jwt", token, {
-  //   expires: tokenExpireDate,
-  //   httpOnly: true,
-  //   secure: req.secure || req.headers["x-forwarded-proto"] === "https",
-  // });
+  /* res.cookie("jwt", token, {
+    expires: tokenExpireDate,
+    httpOnly: true,
+    secure: req.secure || req.headers["x-forwarded-proto"] === "https",
+  }); */
 
-  // Remove password from output
-  user.password = undefined;
-
-  res.status(statusCode).json({
-    status: "success",
-    data: {
-      user,
-      token,
-      tokenExpireDate,
-    },
-  });
+  req.res_data.data = {
+    user,
+    token,
+    tokenExpireDate,
+  };
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -46,13 +38,24 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
   });
 
+  newUser.password = undefined;
+  req.user = newUser;
+
+  req.res_data = {
+    status_code: 201,
+    status: "success",
+    messages: ["user created successfully"],
+  };
+
   try {
     await new Email(newUser).sendWelcome();
   } catch (error) {
-    return next(new AppError(error), 500);
+    req.res_data.messages.push("welcome email couldn't be sent");
   }
 
-  createSendToken(newUser, 201, req, res);
+  createJwtToken(req);
+
+  next();
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -74,8 +77,18 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
-  // 3) If everything ok, send token to client
-  createSendToken(user, 200, req, res);
+  user.password = undefined;
+  req.user = user;
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+    messages: ["user logged in successfully"],
+  };
+
+  createJwtToken(req);
+
+  next();
 });
 
 exports.logout = (req, res) => {
@@ -83,7 +96,7 @@ exports.logout = (req, res) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
-  res.status(200).json({ status: "success" });
+  res.status(200).json({ status: "success", data: { token: "" } });
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -228,9 +241,19 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.token.password_reset_expires = undefined;
   await user.save();
 
-  // 3) Update changedPasswordAt property for the user
-  // 4) Log the user in, send JWT
-  createSendToken(user, 200, req, res);
+  user.password = undefined;
+  req.user = user;
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+  };
+
+  // TODO: Update changedPasswordAt property for the user
+
+  createJwtToken(req);
+
+  next();
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -247,15 +270,23 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
 
-  // 4) Log user in, send JWT
-  createSendToken(user, 200, req, res);
+  user.password = undefined;
+  req.user = user;
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+  };
+
+  createJwtToken(req);
+
+  next();
 });
 
-exports.sendEmailVerification = catchAsync(async (req, res, next) => {
+export const sendEmailVerification = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   const emailVerificationToken = user.createToken("email_verification");
-  await user.save();
 
   try {
     const emailVerificationUrl = `${req.protocol}://${req.get(
@@ -263,12 +294,20 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
     )}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
     await new Email(user).sendEmailVerification(emailVerificationUrl);
 
-    // TODO: verification.email = "sent"
+    user.verification.email = "Sent";
+    await user.save();
 
-    res.status(200).json({
+    req.res_data = {
+      status_code: 200,
       status: "success",
-      message: "Verification URL sent to email",
-    });
+      messages: ["Verification URL sent to email"],
+      data: {
+        urlSentToEmail:
+          process.env.NODE_ENV === "development"
+            ? emailVerificationUrl
+            : "url sent to your email",
+      },
+    };
   } catch (err) {
     user.token.email_verification_token = undefined;
     user.token.email_verification_expires = undefined;
@@ -288,23 +327,22 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-  // TODO: seperately check token (invalid or not) and expire
-  // if expired then
-  //    1) token and expire = undefined
-  //    2) verification.email = not sent
   const user = await User.findOne({
     "token.email_verification_token": hashedToken,
-    "token.email_verification_expires": { $gt: Date.now() },
+    // "token.email_verification_expires": { $gt: Date.now() },
   });
 
-  // 2) If token has not expired, and there is user, verify email
   if (!user) {
-    return next(new AppError("Token is invalid or has expired", 400));
+    return next(new AppError("Token is invalid", 400));
   }
 
-  // TODO: instead of this do:
-  //                  verification.email = verified
-  user.verification.email = true;
+  if (user.token.email_verification_expires < Date.now()) {
+    user.verification.email = "Expired";
+    await user.save();
+    return next(new AppError("Token has expired", 400));
+  }
+
+  user.verification.email = "Verified";
   user.token.email_verification_token = undefined;
   user.token.email_verification_expires = undefined;
   await user.save();

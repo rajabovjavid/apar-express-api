@@ -40,12 +40,9 @@ const userSchema = new mongoose.Schema(
     },
     verification: {
       email: {
-        type: Boolean,
-        default: false,
-        // TODO:
-        /* type: String,
-        default: "Not Sent",
-        enum: ["Not Sent", "Sent", "Verified"], */
+        type: String,
+        default: "NotSent",
+        enum: ["NotSent", "Sent", "Expired", "Verified"],
       },
       phone_number: {
         type: Boolean,
@@ -53,13 +50,13 @@ const userSchema = new mongoose.Schema(
       },
       image: {
         type: String,
-        default: "Not Uploaded",
-        enum: ["Not Uploaded", "Uploaded", "Verified"],
+        default: "NotUploaded",
+        enum: ["NotUploaded", "Uploaded", "NotVerified", "Verified"],
       },
       id_card: {
         type: String,
-        default: "Not Uploaded",
-        enum: ["Not Uploaded", "Uploaded", "Verified"],
+        default: "NotUploaded",
+        enum: ["NotUploaded", "Uploaded", "NotVerified", "Verified"],
       },
     },
     social_accounts: {
