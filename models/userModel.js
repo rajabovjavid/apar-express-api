@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const constants = require("../utils/constants");
+const Email = require("../utils/email");
 
 const userSchema = new mongoose.Schema(
   {
@@ -219,6 +220,20 @@ userSchema.methods.createToken = function (tokenField) {
   this.token[`${tokenField}_expires`] = Date.now() + 10 * 60 * 1000;
 
   return token;
+};
+
+userSchema.methods.sendEmailVerification = async function (protocol, host) {
+  try {
+    const emailVerificationToken = this.createToken("email_verification");
+    const emailVerificationUrl = `${protocol}://${host}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
+    await new Email(this).sendEmailVerification(emailVerificationUrl);
+
+    this.verification.email = constants.email.sent;
+
+    return emailVerificationUrl;
+  } catch (error) {
+    return null;
+  }
 };
 
 const User = mongoose.model("User", userSchema);

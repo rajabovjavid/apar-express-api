@@ -39,9 +39,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
   });
 
-  newUser.password = undefined;
-  req.user = newUser;
-
   req.res_data = {
     status_code: 201,
     status: "success",
@@ -54,6 +51,19 @@ exports.signup = catchAsync(async (req, res, next) => {
     req.res_data.messages.push("welcome email couldn't be sent");
   }
 
+  const emailVerificationUrl = await newUser.sendEmailVerification(
+    req.protocol,
+    req.get("host")
+  );
+  if (!emailVerificationUrl) {
+    req.res_data.messages.push(
+      "There was an error sending the email. Try again later!"
+    );
+  }
+  await newUser.save();
+
+  newUser.password = undefined;
+  req.user = newUser;
   createJwtToken(req);
 
   next();
@@ -287,40 +297,31 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 exports.sendEmailVerification = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
-  const emailVerificationToken = user.createToken("email_verification");
+  const emailVerificationUrl = await user.sendEmailVerification(
+    req.protocol,
+    req.get("host")
+  );
 
-  try {
-    const emailVerificationUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
-    await new Email(user).sendEmailVerification(emailVerificationUrl);
-
-    user.verification.email = constants.email.sent;
-    await user.save();
-
-    req.res_data = {
-      status_code: 200,
-      status: "success",
-      messages: ["Verification URL sent to email"],
-      data: {
-        urlSentToEmail:
-          process.env.NODE_ENV === "development"
-            ? emailVerificationUrl
-            : "url sent to your email",
-      },
-    };
-
-    next();
-  } catch (err) {
-    user.token.email_verification_token = undefined;
-    user.token.email_verification_expires = undefined;
-    await user.save();
-
+  if (!emailVerificationUrl) {
     return next(
       new AppError("There was an error sending the email. Try again later!"),
       500
     );
   }
+
+  await user.save();
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+    messages: ["Verification URL sent to email"],
+    data: {
+      urlSentToEmail:
+        process.env.NODE_ENV === "development"
+          ? emailVerificationUrl
+          : "url sent to your email",
+    },
+  };
 });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
