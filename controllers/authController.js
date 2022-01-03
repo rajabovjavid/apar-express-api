@@ -322,6 +322,8 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
           : "url sent to your email",
     },
   };
+
+  next();
 });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
