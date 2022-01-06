@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema(
       },
       phone_number: {
         type: mongoose.Schema.ObjectId,
+        default: constants.phone.notverified,
         ref: "Status",
       },
       image: {
@@ -183,7 +184,7 @@ userSchema.pre("save", function (next) {
 
 userSchema.pre(/^find/, function (next) {
   this.populate("verification.email")
-    // .populate("verification.phone_number")
+    .populate("verification.phone_number")
     .populate("verification.image")
     .populate("verification.id_card");
   next();

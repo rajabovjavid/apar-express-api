@@ -14,6 +14,10 @@ const constants = {
     notverified: "61d2311987c9442c382a312b",
     verified: "61d2316287c9442c382a312c",
   },
+  phone: {
+    notverified: "61d75e6539e87143a274d9ec",
+    verified: "61d75e5039e87143a274d9eb",
+  },
 };
 
 module.exports = constants;

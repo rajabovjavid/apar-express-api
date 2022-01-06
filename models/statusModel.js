@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const statusSchema = new mongoose.Schema({
   verificationType: {
     type: String,
-    enum: ["email", "phone_number", "image"],
+    enum: ["email", "phone", "image"],
   },
   statusId: String,
   statusText: String,
