@@ -378,7 +378,7 @@ exports.checkSmsVerification = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(
     req.user.id,
     {
-      $set: { "verification.phone_number": true },
+      $set: { "verification.phone_number": constants.phone.verified },
     },
     {
       runValidators: true,
