@@ -359,7 +359,12 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.sendSmsVerification = catchAsync(async (req, res) => {
+exports.sendSmsVerification = catchAsync(async (req, res, next) => {
+  if (req.user.phone_number !== req.body.phone_number) {
+    return next(
+      new AppError("phone number doesn't match one you entered at signup", 400)
+    );
+  }
   const twilioRes = await twilio.sendSmsVerification(req.user.phone_number);
 
   // TODO: prepare proper response
@@ -378,7 +383,7 @@ exports.checkSmsVerification = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(
     req.user.id,
     {
-      $set: { "verification.phone_number": true },
+      $set: { "verification.phone_number": constants.phone.verified },
     },
     {
       runValidators: true,
