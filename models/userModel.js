@@ -2,6 +2,8 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const constants = require("../utils/constants");
+const Email = require("../utils/email");
 
 const userSchema = new mongoose.Schema(
   {
@@ -34,16 +36,35 @@ const userSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: "default.jpg",
     },
     id_card: {
       type: String,
     },
     verification: {
-      type: String,
-      required: true,
-      default: "Not Uploaded",
-      enum: ["Not Uploaded", "Uploaded", "Verified"],
+      email: {
+        type: mongoose.Schema.ObjectId,
+        default: constants.email.notsent,
+        ref: "Status",
+        required: true,
+      },
+      phone_number: {
+        type: mongoose.Schema.ObjectId,
+        default: constants.phone.notverified,
+        ref: "Status",
+        required: true,
+      },
+      image: {
+        type: mongoose.Schema.ObjectId,
+        default: constants.image.notuploaded,
+        ref: "Status",
+        required: true,
+      },
+      id_card: {
+        type: mongoose.Schema.ObjectId,
+        default: constants.image.notuploaded,
+        ref: "Status",
+        required: true,
+      },
     },
     social_accounts: {
       facebook: {
@@ -109,9 +130,27 @@ const userSchema = new mongoose.Schema(
         },
       },
     },
+    token: {
+      password_reset_token: {
+        type: String,
+      },
+      password_reset_expires: {
+        type: Date,
+      },
+      email_verification_token: {
+        type: String,
+      },
+      email_verification_expires: {
+        type: Date,
+      },
+      phone_verification_token: {
+        type: String,
+      },
+      phone_verification_expires: {
+        type: Date,
+      },
+    },
     passwordChangedAt: Date,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -147,6 +186,14 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+userSchema.pre(/^find/, function (next) {
+  this.populate("verification.email")
+    .populate("verification.phone_number")
+    .populate("verification.image")
+    .populate("verification.id_card");
+  next();
+});
+
 // whether entered password correct or not
 userSchema.methods.correctPassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
@@ -167,17 +214,31 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(32).toString("hex");
+userSchema.methods.createToken = function (tokenField) {
+  const token = crypto.randomBytes(32).toString("hex");
 
-  this.passwordResetToken = crypto
+  this.token[`${tokenField}_token`] = crypto
     .createHash("sha256")
-    .update(resetToken)
+    .update(token)
     .digest("hex");
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  this.token[`${tokenField}_expires`] = Date.now() + 10 * 60 * 1000;
 
-  return resetToken;
+  return token;
+};
+
+userSchema.methods.sendEmailVerification = async function (protocol, host) {
+  try {
+    const emailVerificationToken = this.createToken("email_verification");
+    const emailVerificationUrl = `${protocol}://${host}/api/v1/users/verification/verifyEmail/${emailVerificationToken}`;
+    await new Email(this).sendEmailVerification(emailVerificationUrl);
+
+    this.verification.email = constants.email.sent;
+
+    return emailVerificationUrl;
+  } catch (error) {
+    return null;
+  }
 };
 
 const User = mongoose.model("User", userSchema);

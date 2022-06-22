@@ -5,36 +5,30 @@ const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
+const twilio = require("../utils/twilio");
+const constants = require("../utils/constants");
 
-const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
+const createJwtToken = (req) => {
+  const { user } = req;
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
-
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id);
 
   const tokenExpireDate = new Date(
     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
   );
 
-  // res.cookie("jwt", token, {
-  //   expires: tokenExpireDate,
-  //   httpOnly: true,
-  //   secure: req.secure || req.headers["x-forwarded-proto"] === "https",
-  // });
+  /* res.cookie("jwt", token, {
+    expires: tokenExpireDate,
+    httpOnly: true,
+    secure: req.secure || req.headers["x-forwarded-proto"] === "https",
+  }); */
 
-  // Remove password from output
-  user.password = undefined;
-
-  res.status(statusCode).json({
-    status: "success",
-    data: {
-      user,
-      token,
-      tokenExpireDate,
-    },
-  });
+  req.res_data.data = {
+    user,
+    token,
+    tokenExpireDate,
+  };
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
@@ -45,9 +39,34 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
   });
 
-  // await new Email(newUser).sendWelcome();
+  req.res_data = {
+    status_code: 201,
+    status: "success",
+    messages: ["user created successfully"],
+  };
 
-  createSendToken(newUser, 201, req, res);
+  try {
+    await new Email(newUser).sendWelcome();
+  } catch (error) {
+    req.res_data.messages.push("welcome email couldn't be sent");
+  }
+
+  const emailVerificationUrl = await newUser.sendEmailVerification(
+    req.protocol,
+    req.get("host")
+  );
+  if (!emailVerificationUrl) {
+    req.res_data.messages.push(
+      "There was an error sending the email. Try again later!"
+    );
+  }
+  await newUser.save();
+
+  newUser.password = undefined;
+  req.user = newUser;
+  createJwtToken(req);
+
+  next();
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -69,8 +88,18 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
-  // 3) If everything ok, send token to client
-  createSendToken(user, 200, req, res);
+  user.password = undefined;
+  req.user = user;
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+    messages: ["user logged in successfully"],
+  };
+
+  createJwtToken(req);
+
+  next();
 });
 
 exports.logout = (req, res) => {
@@ -78,7 +107,7 @@ exports.logout = (req, res) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
-  res.status(200).json({ status: "success" });
+  res.status(200).json({ status: "success", data: { token: "" } });
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -163,6 +192,7 @@ exports.restrictTo = (...roles) => (req, res, next) => {
       new AppError("You do not have permission to perform this action", 403)
     );
   }
+  req.admin = req.user;
 
   next();
 };
@@ -175,7 +205,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 
   // 2) Generate the random reset token
-  const resetToken = user.createPasswordResetToken();
+  const resetToken = user.createToken("password_reset");
   await user.save({ validateBeforeSave: false });
 
   // 3) Send it to user's email
@@ -190,8 +220,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       message: "Token sent to email!",
     });
   } catch (err) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    user.token.password_reset_token = undefined;
+    user.token.password_reset_expires = undefined;
     await user.save({ validateBeforeSave: false });
 
     return next(
@@ -209,8 +239,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .digest("hex");
 
   const user = await User.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() },
+    "token.password_reset_token": hashedToken,
+    "token.password_reset_expires": { $gt: Date.now() },
   });
 
   // 2) If token has not expired, and there is user, set the new password
@@ -218,14 +248,23 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("Token is invalid or has expired", 400));
   }
   user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
-  user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+  user.token.password_reset_token = undefined;
+  user.token.password_reset_expires = undefined;
   await user.save();
 
-  // 3) Update changedPasswordAt property for the user
-  // 4) Log the user in, send JWT
-  createSendToken(user, 200, req, res);
+  user.password = undefined;
+  req.user = user;
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+  };
+
+  // TODO: Update changedPasswordAt property for the user
+
+  createJwtToken(req);
+
+  next();
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -242,6 +281,114 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
 
-  // 4) Log user in, send JWT
-  createSendToken(user, 200, req, res);
+  user.password = undefined;
+  req.user = user;
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+  };
+
+  createJwtToken(req);
+
+  next();
+});
+
+exports.sendEmailVerification = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  const emailVerificationUrl = await user.sendEmailVerification(
+    req.protocol,
+    req.get("host")
+  );
+
+  if (!emailVerificationUrl) {
+    return next(
+      new AppError("There was an error sending the email. Try again later!"),
+      500
+    );
+  }
+
+  await user.save();
+
+  req.res_data = {
+    status_code: 200,
+    status: "success",
+    messages: ["Verification URL sent to email"],
+    data: {
+      urlSentToEmail:
+        process.env.NODE_ENV === "development"
+          ? emailVerificationUrl
+          : "url sent to your email",
+    },
+  };
+
+  next();
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  // 1) Get user based on the token
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    "token.email_verification_token": hashedToken,
+    // "token.email_verification_expires": { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new AppError("Token is invalid", 400));
+  }
+
+  if (user.token.email_verification_expires < Date.now()) {
+    user.verification.email = constants.email.expired;
+    await user.save();
+    return next(new AppError("Token has expired", 400));
+  }
+
+  user.verification.email = constants.email.verified;
+  user.token.email_verification_token = undefined;
+  user.token.email_verification_expires = undefined;
+  await user.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "email verified",
+  });
+});
+
+exports.sendSmsVerification = catchAsync(async (req, res, next) => {
+  if (req.user.phone_number !== req.body.phone_number) {
+    return next(
+      new AppError("phone number doesn't match one you entered at signup", 400)
+    );
+  }
+  const twilioRes = await twilio.sendSmsVerification(req.user.phone_number);
+
+  // TODO: prepare proper response
+  res.status(200).json({ twilioRes });
+});
+
+exports.checkSmsVerification = catchAsync(async (req, res, next) => {
+  const twilioRes = await twilio.checkSmsVerification(
+    req.user.phone_number,
+    req.body.code
+  );
+
+  if (twilioRes.status !== "approved") {
+    return next(new AppError("Code is invalid or has expired", 400));
+  }
+  await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: { "verification.phone_number": constants.phone.verified },
+    },
+    {
+      runValidators: true,
+    }
+  );
+  // TODO: prepare proper response
+  res.status(200).json({ twilioRes });
 });

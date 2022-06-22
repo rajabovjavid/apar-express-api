@@ -26,6 +26,10 @@ router
   .get(userController.beforeGetUser, userController.getUser, sendResponse);
 // .patch(userController.updateUser)
 // .delete(userController.deleteUser);
+router.route("/users/:id/verification/verifyImage").patch((req, res, next) => {
+  req.user = { id: req.params.id };
+  next();
+}, userController.verifyImage);
 
 // shipment related routes
 router
@@ -48,5 +52,8 @@ router
 router.route("/cities/:id").get(adminController.getCity, sendResponse);
 router.route("/cities/:id/addDistance").patch(adminController.addDistance);
 router.route("/cities/:id/addDistricts").patch(adminController.addDistricts);
+
+// status related routes
+router.route("/status").post(adminController.createStatus, sendResponse);
 
 module.exports = router;

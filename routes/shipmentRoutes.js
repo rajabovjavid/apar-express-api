@@ -1,7 +1,6 @@
 const express = require("express");
 const authController = require("../controllers/authController");
 const shipmentController = require("../controllers/shipmentController");
-const s3Controller = require("../controllers/s3Controller");
 const { sendResponse } = require("../controllers/handlerFactory");
 
 const router = express.Router();
@@ -18,6 +17,19 @@ router
     shipmentController.isOwner,
     sendResponse
   );
-router.route("/signedUrl").get(s3Controller.getSignedUrl);
+router.route("/:id/signedUrl/put").get(
+  shipmentController.getShipment,
+  shipmentController.isOwner,
+  (req, res, next) => {
+    req.methodObject = "putObject";
+    next();
+  },
+  shipmentController.getSignedUrlForPackage
+);
+
+router.route("/:id/signedUrl/get").get((req, res, next) => {
+  req.methodObject = "getObject";
+  next();
+}, shipmentController.getSignedUrlForPackage);
 
 module.exports = router;
