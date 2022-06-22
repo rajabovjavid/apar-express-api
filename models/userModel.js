@@ -45,21 +45,25 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.ObjectId,
         default: constants.email.notsent,
         ref: "Status",
+        required: true,
       },
       phone_number: {
         type: mongoose.Schema.ObjectId,
         default: constants.phone.notverified,
         ref: "Status",
+        required: true,
       },
       image: {
         type: mongoose.Schema.ObjectId,
         default: constants.image.notuploaded,
         ref: "Status",
+        required: true,
       },
       id_card: {
         type: mongoose.Schema.ObjectId,
         default: constants.image.notuploaded,
         ref: "Status",
+        required: true,
       },
     },
     social_accounts: {

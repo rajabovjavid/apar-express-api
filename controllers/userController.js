@@ -29,8 +29,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     req.body,
     "email",
     "name_surname",
-    "image",
-    "id_card"
+    "social_accounts"
   );
 
   // 3) Update user document
