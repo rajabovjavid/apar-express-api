@@ -1,3 +1,9 @@
+/* eslint-disable no-console */
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+
+dotenv.config({ path: "./config.env" });
+
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! 💥 Shutting down...");
   console.log(err.name, err.message);
@@ -5,17 +11,19 @@ process.on("uncaughtException", (err) => {
 });
 
 const app = require("./src/app");
-const connection = require("./src/config/db");
 
 // Database
-connection.once("open", () => console.log("Database connected Successfully"));
-connection.on("error", (err) => console.log("Error", err));
+const DB = process.env.LOCAL_DB || process.env.DATABASE;
+mongoose
+  .connect(DB)
+  .then(() => console.log("Database connected Successfully"))
+  .catch((err) => console.log(err));
 
-const port = process.env.PORT || 3000;
-const host = process.env.HOST || "localhost";
+const port = process.env.PORT;
+const baseUrl = process.env.BASE_URL;
 const server = app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  console.log(`Admin panel: http://${host}:${port}/admin`);
+  console.log(`Admin panel: ${baseUrl}admin`);
 });
 
 process.on("unhandledRejection", (err) => {

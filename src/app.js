@@ -1,4 +1,3 @@
-const dotenv = require("dotenv");
 const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
@@ -10,9 +9,7 @@ const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 const compression = require("compression");
 const cors = require("cors");
-// change for test
-
-dotenv.config({ path: "./config.env" });
+const favicon = require("serve-favicon");
 
 const { adminJs, adminJsRouter } = require("./admin");
 const AppError = require("./utils/appError");
@@ -25,6 +22,8 @@ const shipmentRouter = require("./routes/shipmentRoutes");
 // Start express app
 const app = express();
 app.use(adminJs.options.rootPath, adminJsRouter);
+
+app.use(favicon(path.join(__dirname, "public", "uploads", "favicon.ico")));
 
 app.enable("trust proxy");
 
@@ -96,6 +95,7 @@ app.use(compression());
 // });
 
 // 3) ROUTES
+
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/trips", tripRouter);
