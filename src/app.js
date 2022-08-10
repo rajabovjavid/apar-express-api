@@ -1,3 +1,4 @@
+const dotenv = require("dotenv");
 const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
@@ -11,6 +12,9 @@ const compression = require("compression");
 const cors = require("cors");
 // change for test
 
+dotenv.config({ path: "./config.env" });
+
+const { adminJs, adminJsRouter } = require("./admin");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const adminRouter = require("./routes/adminRoutes");
@@ -20,6 +24,7 @@ const shipmentRouter = require("./routes/shipmentRoutes");
 
 // Start express app
 const app = express();
+app.use(adminJs.options.rootPath, adminJsRouter);
 
 app.enable("trust proxy");
 

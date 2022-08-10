@@ -1,35 +1,21 @@
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! 💥 Shutting down...");
   console.log(err.name, err.message);
   process.exit(1);
 });
 
-dotenv.config({ path: "./config.env" });
-const app = require("./app");
+const app = require("./src/app");
+const connection = require("./src/config/db");
 
-const DB =
-  process.env.LOCAL_DB ||
-  process.env.DATABASE.replace(
-    "<username>",
-    process.env.DATABASE_USERNAME
-  ).replace("<password>", process.env.DATABASE_PASSWORD);
-
-mongoose
-  .connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("DB connection successful!"))
-  .catch((err) => console.log(err));
+// Database
+connection.once("open", () => console.log("Database connected Successfully"));
+connection.on("error", (err) => console.log("Error", err));
 
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || "localhost";
 const server = app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
+  console.log(`Server running on port ${port}`);
+  console.log(`Admin panel: http://${host}:${port}/admin`);
 });
 
 process.on("unhandledRejection", (err) => {

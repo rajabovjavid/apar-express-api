@@ -16,6 +16,7 @@ const shipmentSchema = new mongoose.Schema(
       category: {
         type: String,
         required: true,
+        // TODO: add enum
         // enum: ["kitab", "sened", "yemek", "başqa"],
       },
       details: {
