@@ -18,6 +18,7 @@ const adminRouter = require("./routes/adminRoutes");
 const userRouter = require("./routes/userRoutes");
 const tripRouter = require("./routes/tripRoutes");
 const shipmentRouter = require("./routes/shipmentRoutes");
+const stripeRouter = require("./routes/stripeRoutes");
 
 // Start express app
 const app = express();
@@ -100,7 +101,8 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/trips", tripRouter);
 app.use("/api/v1/shipments", shipmentRouter);
-app.get("/favicon.ico", (req, res) => res.status(204));
+app.use("/api/v1/stripe", stripeRouter);
+
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });

@@ -7,6 +7,7 @@ const AppError = require("../utils/appError");
 const Email = require("../utils/email");
 const twilio = require("../utils/twilio");
 const constants = require("../utils/constants");
+const { createCustomer } = require("./stripeController");
 
 const createJwtToken = (req) => {
   const { user } = req;
@@ -60,6 +61,15 @@ exports.signup = catchAsync(async (req, res, next) => {
       "There was an error sending the email. Try again later!"
     );
   }
+  await newUser.save();
+
+  const stripe_customer = await createCustomer(newUser);
+  if (!stripe_customer) {
+    req.res_data.messages.push(
+      "There was an error creating stripe customer account. Try again later!"
+    );
+  }
+  newUser.stripe_customer = stripe_customer;
   await newUser.save();
 
   newUser.password = undefined;

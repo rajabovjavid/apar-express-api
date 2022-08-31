@@ -9,7 +9,7 @@ const tripSchema = new mongoose.Schema(
       ref: "User",
     },
     traveler_ratings_average: {
-      // TODO - need to update very
+      // TODO: - need to update very
       type: Number,
       required: true,
       default: 0,
