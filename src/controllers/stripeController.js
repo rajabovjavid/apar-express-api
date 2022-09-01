@@ -12,7 +12,7 @@ exports.createConnectAccount = catchAsync(async (req, res, next) => {
   // if user don't have stripe_account_id yet, create now
   if (!user.stripe_account) {
     const account = await stripe.accounts.create({
-      type: "standard",
+      type: req.body.type === "standart" ? "standart" : "express",
       email: user.email,
     });
 
