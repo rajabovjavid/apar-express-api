@@ -10,7 +10,7 @@ const factory = require("./handlerFactory");
 exports.createShipment = catchAsync(async (req, res) => {
   const {
     trip: trip_id,
-    package_category: category,
+    package_categories: categories,
     package_details: details,
     package_weight: weight,
     receiver_number,
@@ -28,7 +28,7 @@ exports.createShipment = catchAsync(async (req, res) => {
     sender: req.user.id,
     trip: trip_id,
     package: {
-      category,
+      categories,
       details,
       weight,
     },

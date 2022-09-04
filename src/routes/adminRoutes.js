@@ -16,6 +16,11 @@ router
   .route("/calculatePrice")
   .post(tripController.calculatePricePerKg, sendResponse);
 
+router.route("/cities").get(adminController.getAllCities, sendResponse);
+router
+  .route("/package-categories")
+  .get(adminController.getAllPackageCategories, sendResponse);
+
 // only admins can reach below
 router.use(authController.restrictTo("admin"));
 
@@ -45,13 +50,18 @@ router
 // .delete(tripController.deleteTrip);
 
 // city related routes
-router
-  .route("/cities")
-  .get(adminController.getAllCities, sendResponse)
-  .post(adminController.createCity, sendResponse);
+router.route("/cities").post(adminController.createCity, sendResponse);
 router.route("/cities/:id").get(adminController.getCity, sendResponse);
 router.route("/cities/:id/addDistance").patch(adminController.addDistance);
 router.route("/cities/:id/addDistricts").patch(adminController.addDistricts);
+
+// package category related routes
+router
+  .route("/package-categories")
+  .post(adminController.createPackageCategory, sendResponse);
+router
+  .route("/package-categories/:id")
+  .get(adminController.getPackageCategory, sendResponse);
 
 // status related routes
 router.route("/status").post(adminController.createStatus, sendResponse);

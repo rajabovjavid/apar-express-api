@@ -1,5 +1,6 @@
 const Trip = require("../models/tripModel");
 const City = require("../models/cityModel");
+const PackageCategory = require("../models/packageCategoryModel");
 
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
@@ -34,16 +35,14 @@ exports.beforeCreateTrip = catchAsync(async (req, res, next) => {
   }
 
   // categories check
-  if (!req.body.categories?.length) {
-    // if body.categories is undefined or empty
-    req.body.categories = constants.packageCategories;
-  } else if (
-    // if body.categories isn't subarray of constants.packageCategories
-    !req.body.categories.every((val) =>
-      constants.packageCategories.includes(val)
-    )
-  ) {
-    return next(new AppError(`Unsupported category`, 404));
+  if (req.body.categories?.length) {
+    // eslint-disable-next-line no-unused-vars
+    const categories = await PackageCategory.find().select("id");
+    req.body.categories.forEach((category) => {
+      if (!categories.some((c) => c.id === category)) {
+        return next(new AppError(`Unsupported category`, 404));
+      }
+    });
   }
 
   // assignin remaining parts

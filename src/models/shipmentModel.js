@@ -13,12 +13,13 @@ const shipmentSchema = new mongoose.Schema(
       ref: "Trip",
     },
     package: {
-      category: {
-        type: String,
-        required: true,
-        // TODO: add enum
-        // enum: ["kitab", "sened", "yemek", "başqa"],
-      },
+      categories: [
+        {
+          type: mongoose.Schema.ObjectId,
+          required: true,
+          ref: "PackageCategory",
+        },
+      ],
       details: {
         type: String,
       },
@@ -26,10 +27,12 @@ const shipmentSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-      images: {
-        type: String,
-        // required: true,
-      },
+      images: [
+        {
+          type: String,
+          // required: true,
+        },
+      ],
     },
     receiver_number: {
       type: String,
@@ -52,13 +55,12 @@ const shipmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// shipmentSchema.pre(/^find/, function (next) {
-// this.populate({
-//   path: "trip",
-//   select: "origin destination pickup_deadline delivery_deadline traveler",
-// });
-//   next();
-// });
+shipmentSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "package.categories",
+  });
+  next();
+});
 
 const Shipment = mongoose.model("Shipment", shipmentSchema);
 
