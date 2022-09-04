@@ -119,6 +119,14 @@ exports.beforeGetAllTrips = (req, res, next) => {
     pickup_deadline.lte = date.setUTCHours(23, 59, 59, 999); // end of the date
   }
 
+  req.body.popOptions = [
+    {
+      path: "traveler",
+      select:
+        "traveler.ratings_average traveler.ratings_quantity traveler.number_of_trips traveler.number_of_completed_trips",
+    },
+  ];
+
   req.query = {
     ...req.query,
     is_active: "true",
@@ -126,6 +134,7 @@ exports.beforeGetAllTrips = (req, res, next) => {
     fields: "-description,-is_active,-earning,-createdAt,-updatedAt",
     sort: "pickup_deadline,-traveler_ratings_average",
   };
+
   next();
 };
 
@@ -145,7 +154,7 @@ exports.beforeGetTrip = (req, res, next) => {
     popOptions.push({
       path: "traveler",
       select:
-        "traveler.ratings_average traveler.ratings_quantity traveler.number_of_completed_trips traveler.number_of_trips",
+        "-role -promo -stripe_customer -traveler.stripe_account -token -passwordChangedAt -createdAt -updatedAt",
     });
   }
   if (popOptions.length > 0) req.body.popOptions = popOptions;
