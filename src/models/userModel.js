@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+      required: [true, "role cannot be empty"],
       immutable: (doc) => doc.role !== "ADMIN",
     },
     password: {
@@ -86,6 +87,8 @@ const userSchema = new mongoose.Schema(
         default: "",
       },
     },
+    stripe_customer: {},
+    stripe_session: {},
     traveler: {
       number_of_trips: {
         type: Number,
@@ -115,20 +118,7 @@ const userSchema = new mongoose.Schema(
         required: true,
         default: false,
       },
-      bank_account: {
-        bank_name: {
-          type: String,
-          default: "",
-        },
-        iban: {
-          type: String,
-          default: "",
-        },
-        swift: {
-          type: String,
-          default: "",
-        },
-      },
+      stripe_account: {},
     },
     token: {
       password_reset_token: {

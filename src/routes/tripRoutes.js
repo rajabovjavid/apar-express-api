@@ -5,6 +5,8 @@ const authController = require("../controllers/authController");
 const { sendResponse } = require("../controllers/handlerFactory");
 
 const router = express.Router();
+// only signedIn users
+router.use(authController.protect);
 
 router
   .route("/")
@@ -17,8 +19,6 @@ router
   .route("/:id")
   .get(tripController.beforeGetTrip, tripController.getTrip, sendResponse);
 
-// only signedIn users
-router.use(authController.protect);
 // only verified users
 router.use(userController.isVerified);
 

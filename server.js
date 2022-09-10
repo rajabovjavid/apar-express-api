@@ -1,5 +1,6 @@
+/* eslint-disable no-console */
+require("dotenv").config({ path: "./config.env" });
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
 
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION! 💥 Shutting down...");
@@ -7,29 +8,20 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-dotenv.config({ path: "./config.env" });
-const app = require("./app");
+const app = require("./src/app");
 
-const DB =
-  process.env.LOCAL_DB ||
-  process.env.DATABASE.replace(
-    "<username>",
-    process.env.DATABASE_USERNAME
-  ).replace("<password>", process.env.DATABASE_PASSWORD);
-
+// Database
+const DB = process.env.LOCAL_DB || process.env.DATABASE;
 mongoose
-  .connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("DB connection successful!"))
+  .connect(DB)
+  .then(() => console.log("Database connected Successfully"))
   .catch((err) => console.log(err));
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
+const baseUrl = process.env.BASE_URL;
 const server = app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
+  console.log(`Server running on port ${port}`);
+  console.log(`Admin panel: ${baseUrl}admin`);
 });
 
 process.on("unhandledRejection", (err) => {

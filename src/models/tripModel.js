@@ -9,7 +9,7 @@ const tripSchema = new mongoose.Schema(
       ref: "User",
     },
     traveler_ratings_average: {
-      // TODO - need to update very
+      // TODO: - need to update very
       type: Number,
       required: true,
       default: 0,
@@ -42,7 +42,13 @@ const tripSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    categories: [{ type: String, required: true }],
+    categories: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "PackageCategory",
+        required: true,
+      },
+    ],
     description: {
       type: String,
     },
@@ -80,6 +86,13 @@ tripSchema.virtual("shipments", {
   ref: "Shipment",
   foreignField: "trip",
   localField: "_id",
+});
+
+tripSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "categories",
+  });
+  next();
 });
 
 const Trip = mongoose.model("Trip", tripSchema);

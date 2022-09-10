@@ -18,6 +18,7 @@ const constants = {
     notverified: "61d75e6539e87143a274d9ec",
     verified: "61d75e5039e87143a274d9eb",
   },
+  fee_percentage: 20,
 };
 
 module.exports = constants;

@@ -5,11 +5,12 @@ const handleCastErrorDB = (err) => {
   return new AppError(message, 400);
 };
 
-// TODO:this is not working on production environemnt
 const handleDuplicateFieldsDB = (err) => {
-  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+  const key = Object.keys(err.keyValue)[0];
+  const value = err.keyValue[key];
+  // const value = err.message.match(/(["'])(\\?.)*?\1/)[0];
 
-  const message = `Duplicate field value: ${value}. Please use another value!`;
+  const message = `Duplicate field: ${key} with value: ${value}. Please use another value!`;
   return new AppError(message, 400);
 };
 

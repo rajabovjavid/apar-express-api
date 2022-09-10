@@ -1,5 +1,6 @@
 const Trip = require("../models/tripModel");
 const City = require("../models/cityModel");
+const PackageCategory = require("../models/packageCategoryModel");
 
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
@@ -34,16 +35,14 @@ exports.beforeCreateTrip = catchAsync(async (req, res, next) => {
   }
 
   // categories check
-  if (!req.body.categories?.length) {
-    // if body.categories is undefined or empty
-    req.body.categories = constants.packageCategories;
-  } else if (
-    // if body.categories isn't subarray of constants.packageCategories
-    !req.body.categories.every((val) =>
-      constants.packageCategories.includes(val)
-    )
-  ) {
-    return next(new AppError(`Unsupported category`, 404));
+  if (req.body.categories?.length) {
+    // eslint-disable-next-line no-unused-vars
+    const categories = await PackageCategory.find().select("id");
+    req.body.categories.forEach((category) => {
+      if (!categories.some((c) => c.id === category)) {
+        return next(new AppError(`Unsupported category`, 404));
+      }
+    });
   }
 
   // assignin remaining parts
@@ -119,6 +118,14 @@ exports.beforeGetAllTrips = (req, res, next) => {
     pickup_deadline.lte = date.setUTCHours(23, 59, 59, 999); // end of the date
   }
 
+  req.body.popOptions = [
+    {
+      path: "traveler",
+      select:
+        "traveler.ratings_average traveler.ratings_quantity traveler.number_of_trips traveler.number_of_completed_trips",
+    },
+  ];
+
   req.query = {
     ...req.query,
     is_active: "true",
@@ -126,6 +133,7 @@ exports.beforeGetAllTrips = (req, res, next) => {
     fields: "-description,-is_active,-earning,-createdAt,-updatedAt",
     sort: "pickup_deadline,-traveler_ratings_average",
   };
+
   next();
 };
 
@@ -145,7 +153,7 @@ exports.beforeGetTrip = (req, res, next) => {
     popOptions.push({
       path: "traveler",
       select:
-        "traveler.ratings_average traveler.ratings_quantity traveler.number_of_completed_trips traveler.number_of_trips",
+        "-role -promo -stripe_customer -traveler.stripe_account -token -passwordChangedAt -createdAt -updatedAt",
     });
   }
   if (popOptions.length > 0) req.body.popOptions = popOptions;

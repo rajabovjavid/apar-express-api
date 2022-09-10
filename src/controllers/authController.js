@@ -7,6 +7,7 @@ const AppError = require("../utils/appError");
 const Email = require("../utils/email");
 const twilio = require("../utils/twilio");
 const constants = require("../utils/constants");
+const { createCustomer } = require("./stripeController");
 
 const createJwtToken = (req) => {
   const { user } = req;
@@ -60,6 +61,15 @@ exports.signup = catchAsync(async (req, res, next) => {
       "There was an error sending the email. Try again later!"
     );
   }
+  await newUser.save();
+
+  const stripe_customer = await createCustomer(newUser);
+  if (!stripe_customer) {
+    req.res_data.messages.push(
+      "There was an error creating stripe customer account. Try again later!"
+    );
+  }
+  newUser.stripe_customer = stripe_customer;
   await newUser.save();
 
   newUser.password = undefined;
@@ -186,16 +196,18 @@ exports.isLoggedIn = async (req, res, next) => {
   next();
 };
 
-exports.restrictTo = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    return next(
-      new AppError("You do not have permission to perform this action", 403)
-    );
-  }
-  req.admin = req.user;
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
+    }
+    req.admin = req.user;
 
-  next();
-};
+    next();
+  };
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on POSTed email
