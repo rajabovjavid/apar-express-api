@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+      required: [true, "role cannot be empty"],
       immutable: (doc) => doc.role !== "ADMIN",
     },
     password: {
