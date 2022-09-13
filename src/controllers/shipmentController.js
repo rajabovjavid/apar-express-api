@@ -1,3 +1,4 @@
+const ItemCategory = require("../models/itemCategoryModel");
 const Shipment = require("../models/shipmentModel");
 const Trip = require("../models/tripModel");
 const AppError = require("../utils/appError");
@@ -17,10 +18,31 @@ exports.createShipment = catchAsync(async (req, res) => {
     price_per_kg,
   } = req.body;
 
-  // check whether trip's price_per_kg changed
+  // whether trip exists or not
   const trip = await Trip.findById(trip_id);
+  if (!trip) {
+    return new AppError("No document found with that ID", 404);
+  }
+  // whether trip is active or not
+  if (!trip.is_active) {
+    return new AppError("Trip is not active", 400);
+  }
+  // check whether trip's price_per_kg changed
   if (trip.price_per_kg !== price_per_kg) {
     throw new AppError("Price per kg changed. Please try again.", 400);
+  }
+
+  // check whether item categories are valid
+  if (item_categories?.length) {
+    // eslint-disable-next-line no-unused-vars
+    const categories = await ItemCategory.find().select("id");
+    item_categories.forEach((category) => {
+      if (!categories.some((c) => c.id === category)) {
+        return new AppError(`Unsupported category`, 404);
+      }
+    });
+  } else {
+    return new AppError("No item categories provided", 400);
   }
 
   // create shipment
@@ -47,6 +69,7 @@ exports.createShipment = catchAsync(async (req, res) => {
     select: "origin destination pickup_deadline delivery_deadline traveler",
   });
 
+  // populate item categories
   await shipment.populate({ path: "package.items.category" });
 
   // get signed url for each item
