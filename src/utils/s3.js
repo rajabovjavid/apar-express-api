@@ -6,7 +6,7 @@ const s3 = new S3({
   secretAccessKey: process.env.AWS_SECRET_KEY,
 });
 
-exports.getSignedUrl = async (key, methodObject) => {
+exports.getSignedUrl = (key, methodObject) => {
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
@@ -14,8 +14,14 @@ exports.getSignedUrl = async (key, methodObject) => {
 
   if (methodObject === "putObject") params.ContentType = "image/*";
 
-  const url = await s3.getSignedUrl(methodObject, params);
-  return url;
+  // return s3.getSignedUrl(methodObject, params);
+
+  return new Promise((resolve, reject) => {
+    s3.getSignedUrl(methodObject, params, (err, url) => {
+      if (err) reject(err);
+      resolve(url);
+    });
+  });
 };
 
 exports.isKeyExist = async (key) => {

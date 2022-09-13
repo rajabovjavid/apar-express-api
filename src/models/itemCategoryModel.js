@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const packageCategorySchema = new mongoose.Schema({
+const itemCategorySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -16,9 +16,6 @@ const packageCategorySchema = new mongoose.Schema({
   },
 });
 
-const PackageCategory = mongoose.model(
-  "PackageCategory",
-  packageCategorySchema
-);
+const ItemCategory = mongoose.model("ItemCategory", itemCategorySchema);
 
-module.exports = PackageCategory;
+module.exports = ItemCategory;

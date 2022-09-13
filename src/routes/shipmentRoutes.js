@@ -17,7 +17,7 @@ router
     shipmentController.isOwner,
     sendResponse
   );
-router.route("/:id/signedUrl/put").get(
+/* router.route("/:id/signedUrl/put").get(
   shipmentController.getShipment,
   shipmentController.isOwner,
   (req, res, next) => {
@@ -30,6 +30,6 @@ router.route("/:id/signedUrl/put").get(
 router.route("/:id/signedUrl/get").get((req, res, next) => {
   req.methodObject = "getObject";
   next();
-}, shipmentController.getSignedUrlForPackage);
+}, shipmentController.getSignedUrlForPackage); */
 
 module.exports = router;

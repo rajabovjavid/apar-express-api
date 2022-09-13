@@ -18,8 +18,8 @@ router
 
 router.route("/cities").get(adminController.getAllCities, sendResponse);
 router
-  .route("/package-categories")
-  .get(adminController.getAllPackageCategories, sendResponse);
+  .route("/item-categories")
+  .get(adminController.getAllItemCategories, sendResponse);
 
 // only admins can reach below
 router.use(authController.restrictTo("admin"));
@@ -55,13 +55,13 @@ router.route("/cities/:id").get(adminController.getCity, sendResponse);
 router.route("/cities/:id/addDistance").patch(adminController.addDistance);
 router.route("/cities/:id/addDistricts").patch(adminController.addDistricts);
 
-// package category related routes
+// item category related routes
 router
-  .route("/package-categories")
-  .post(adminController.createPackageCategory, sendResponse);
+  .route("/item-categories")
+  .post(adminController.createItemCategory, sendResponse);
 router
-  .route("/package-categories/:id")
-  .get(adminController.getPackageCategory, sendResponse);
+  .route("/item-categories/:id")
+  .get(adminController.getItemCategory, sendResponse);
 
 // status related routes
 router.route("/status").post(adminController.createStatus, sendResponse);

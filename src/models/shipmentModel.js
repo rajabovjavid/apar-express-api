@@ -1,5 +1,31 @@
 const mongoose = require("mongoose");
 
+const shipmentPackage = new mongoose.Schema(
+  {
+    items: [
+      {
+        category: {
+          type: mongoose.Schema.ObjectId,
+          required: true,
+          ref: "ItemCategory",
+        },
+        image: {
+          type: String,
+          // required: true,
+        },
+      },
+    ],
+    details: {
+      type: String,
+    },
+    weight: {
+      type: Number,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const shipmentSchema = new mongoose.Schema(
   {
     sender: {
@@ -12,28 +38,7 @@ const shipmentSchema = new mongoose.Schema(
       required: true,
       ref: "Trip",
     },
-    package: {
-      categories: [
-        {
-          type: mongoose.Schema.ObjectId,
-          required: true,
-          ref: "PackageCategory",
-        },
-      ],
-      details: {
-        type: String,
-      },
-      weight: {
-        type: String,
-        required: true,
-      },
-      images: [
-        {
-          type: String,
-          // required: true,
-        },
-      ],
-    },
+    package: shipmentPackage,
     receiver_number: {
       type: String,
       required: true,
@@ -57,7 +62,7 @@ const shipmentSchema = new mongoose.Schema(
 
 shipmentSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "package.categories",
+    path: "package.items.category",
   });
   next();
 });
