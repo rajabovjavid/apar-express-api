@@ -61,7 +61,7 @@ module.exports = class Email {
       from: this.from,
       to: this.to,
       subject: "Password Reset",
-      text: `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`,
+      text: `Forgot your password? Go to: ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`,
     };
 
     // Create a transport and send email

@@ -1,6 +1,6 @@
 const City = require("../models/cityModel");
 const Status = require("../models/statusModel");
-const PackageCategory = require("../models/packageCategoryModel");
+const ItemCategory = require("../models/itemCategoryModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
@@ -12,9 +12,9 @@ const factory = require("./handlerFactory");
 // trip related operations
 
 // package category related operations
-exports.createPackageCategory = factory.createOne(PackageCategory);
-exports.getPackageCategory = factory.getOne(PackageCategory);
-exports.getAllPackageCategories = factory.getAll(PackageCategory);
+exports.createItemCategory = factory.createOne(ItemCategory);
+exports.getItemCategory = factory.getOne(ItemCategory);
+exports.getAllItemCategories = factory.getAll(ItemCategory);
 
 // city related operations
 exports.createCity = factory.createOne(City);

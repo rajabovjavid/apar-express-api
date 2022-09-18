@@ -22,7 +22,11 @@ const stripeRouter = require("./routes/stripeRoutes");
 
 // Start express app
 const app = express();
+
 app.use(adminJs.options.rootPath, adminJsRouter);
+
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
 
 app.use(favicon(path.join(__dirname, "public", "uploads", "favicon.ico")));
 
@@ -96,7 +100,6 @@ app.use(compression());
 // });
 
 // 3) ROUTES
-
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/trips", tripRouter);

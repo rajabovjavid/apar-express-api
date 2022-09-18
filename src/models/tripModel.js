@@ -45,7 +45,7 @@ const tripSchema = new mongoose.Schema(
     categories: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: "PackageCategory",
+        ref: "ItemCategory",
         required: true,
       },
     ],
