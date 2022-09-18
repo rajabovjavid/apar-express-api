@@ -9,12 +9,18 @@ router.post("/signup", authController.signup, sendResponse);
 router.post("/login", authController.login, sendResponse);
 router.get("/logout", authController.logout);
 
-router.post("/forgotPassword", authController.forgotPassword);
-router.patch(
-  "/resetPassword/:token",
-  authController.resetPassword,
-  sendResponse
-);
+router
+  .route("/forgotPassword")
+  .get((req, res) => {
+    res.status(200).render("password-forgot");
+  })
+  .post(authController.forgotPassword);
+router
+  .route("/resetPassword")
+  .get((req, res) => {
+    res.status(200).render("password-reset", { token: req.query.t });
+  })
+  .post(authController.resetPassword, sendResponse);
 
 router.get("/verification/verifyEmail/:token", authController.verifyEmail);
 

@@ -31,6 +31,10 @@ exports.createShipment = catchAsync(async (req, res) => {
   if (trip.price_per_kg !== price_per_kg) {
     throw new AppError("Price per kg changed. Please try again.", 400);
   }
+  // check whether package weight is less than or equal to trip's max weight
+  if (weight > trip.max_weight) {
+    throw new AppError("Package weight is greater than trip's max weight", 400);
+  }
 
   // check whether item categories are valid
   if (item_categories?.length) {
